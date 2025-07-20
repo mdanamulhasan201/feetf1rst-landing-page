@@ -36,29 +36,11 @@
             },
             {
                 "id": 2,
-                "question": "Wie bevorzugen Sie Ihre Schuhe zu tragen?",
+                "question": "Wird beim Kunden auch eine Einlage gefertigt?",
                 "options": [
                     {
                         "id": 1,
-                        "option": "Die perfekt empfohlene Passform basierend auf meinem 3D-Scan"
-                    },
-                    {
-                        "id": 2,
-                        "option": "Eher enger, da ich meine Schuhe gern fest am Fuß trage"
-                    },
-                    {
-                        "id": 3,
-                        "option": "Eher weiter, da ich mehr Bewegungsfreiheit bevorzuge"
-                    }
-                ]
-            },
-            {
-                "id": 3,
-                "question": "Sind Sie im Besitz einer Orthopädischen Einlage?",
-                "options": [
-                    {
-                        "id": 1,
-                        "option": "Ja"
+                        "option": "Ja, individuell angefertigte Einlage"
                     },
                     {
                         "id": 2,
@@ -67,6 +49,112 @@
                     {
                         "id": 3,
                         "option": "In Planung"
+                    }
+                ]
+            },
+            {
+                "id": 3,
+                "question": "Hat der Kunde Diabetes oder besonders empfindliche Füße?",
+                "options": [
+                    {
+                        "id": 1,
+                        "option": "Ja, Diabetes mit sehr empfindlichen Füßen (hohes Risiko für Druckstellen)"
+                    },
+                    {
+                        "id": 2,
+                        "option": "Ja, Diabetes, aber keine besonderen Beschwerden an den Füßen"
+                    },
+                    {
+                        "id": 3,
+                        "option": "Ja, empfindliche Füße ohne Diabetes (z. B. Druckstellen, empfindliche Haut)"
+                    },
+                    {
+                        "id": 4,
+                        "option": "Nein, keine besonderen Empfindlichkeiten"
+                    }
+                ]
+            },
+            {
+                "id": 4,
+                "question": "Hat der Kunde eine Beinlängendifferenz?",
+                "options": [
+                    {
+                        "id": 1,
+                        "option": "Ja, über 1 cm Unterschied (erfordert möglicherweise eine Anpassung)"
+                    },
+                    {
+                        "id": 2,
+                        "option": "Ja, unter 1 cm Unterschied (leichte Korrektur möglich)"
+                    },
+                    {
+                        "id": 3,
+                        "option": "Nein"
+                    }
+                ]
+            },
+            {
+                "id": 5,
+                "question": "Benötigt der Kunde zusätzlichen Halt oder mehr Stabilität im Schuh?",
+                "options": [
+                    {
+                        "id": 1,
+                        "option": "Ja, hohe Stabilität und verstärkter Fersenhalt  (z. B. starken Knick-Senkfuß) "
+                    },
+                    {
+                        "id": 2,
+                        "option": "Ja, leichte Stabilität und etwas mehr Fersenhalt sinnvoll"
+                    },
+                    {
+                        "id": 3,
+                        "option": "Ja, vor allem Stabilität in der Sohle erforderlich (z. B. schwache Fußmuskulatur)"
+                    },
+                    {
+                        "id": 4,
+                        "option": "Ja, vor allem zusätzlicher Halt im Fersenbereich"
+                    },
+                    {
+                        "id": 5,
+                        "option": "Nein, keine zusätzliche Stabilität erforderlich"
+                    }
+                ]
+            },
+            {
+                "id": 6,
+                "question": "Treten beim Kunden Beschwerden im Ballenbereich auf – z. B. durch Hallux Valgus?",
+                "options": [
+                    {
+                        "id": 1,
+                        "option": "Ja, z. B. Hallux Valgus oder gelegentliche Schmerzen)"
+                    },
+                    {
+                        "id": 2,
+                        "option": "Nein, keine Beschwerden"
+                    }
+                ]
+            },
+            {
+                "id": 6,
+                "question": "Welche Eigenschaften sollte die Sohle des Schuhs haben?",
+                "options": [
+                    {
+                        "id": 1,
+                        "option": "Weich und flexibel (z. B. für empfindliche Füße oder mehr Beweglichkeit)"
+                    },
+                    {
+                        "id": 2,
+                        "option": "Weich mit guter Dämpfung (z. B. für Fersensporn oder Gelenkprobleme)"
+                    },
+                    {
+                        "id": 3,
+                        "option": "Mittelfest mit ausgewogener Dämpfung (komfortabel, aber nicht zu weich)"
+                    },
+                    {
+                        "id": 4,
+                        "option": "Fest und stabil (z. B. für mehr Halt bei Instabilität oder Knick-Senkfuß)"
+                    },
+                    {
+                        "id": 5,
+                        "option": "Extra feste Sohle mit maximaler Stabilität (z. B. für starke Pronation)"
                     }
                 ]
             }

@@ -12,10 +12,6 @@
                     {
                         "id": 1,
                         "option": "Anfänger"
-                    },
-                    {
-                        "id": 2,
-                        "option": "Fortgeschrittener "
                     }
                 ]
             },
@@ -559,7 +555,7 @@
         "id": 3,
         "title": "BusinessEinlagen",
         "image": "/category/einlagenFinder/businesseinlage.jpg",
-        "slug": "business-einlagen",
+        "slug": "businesseinlagen",
         "questions": [
             {
                 "id": 1,
@@ -833,4 +829,4 @@
             }
         ]
     }
-]
+] 

@@ -211,6 +211,9 @@ export default function Sidebar() {
     };
 
     const resetFilters = () => {
+        // clear all session storage
+        sessionStorage.clear();
+
         setFilters({
             typeOfShoes: [],
             gender: '',
@@ -290,6 +293,8 @@ export default function Sidebar() {
             availability: searchParams.get('availability') === 'true' || false,
         }));
     }, [searchParams]);
+
+
 
     return (
         <>

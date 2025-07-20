@@ -55,7 +55,7 @@ export default function EinlagenFinder() {
     }
 
     const handleCategoryClick = (e, category) => {
-        if (category.slug === 'alpines-skifahren' || category.slug === 'freestyle') {
+        if (category.slug === 'alltagseinlage' || category.slug === 'sporteinlage' || category.slug === 'businesseinlagen') {
             e.preventDefault()
             setSelectedCategory(category)
             setIsModalOpen(true)
@@ -130,6 +130,7 @@ export default function EinlagenFinder() {
                         setSelectedCategory(null)
                     }}
                     category={selectedCategory}
+                    // categoryData={null}
                 />
             )}
         </>
