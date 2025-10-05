@@ -5,9 +5,11 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import bannerImg from "../../public/banner/rightImg.jpg";
 import logo from "../../public/banner/logo.png";
+import RegisterEmailModal from "./(site)/_components/RegisterEmail";
 
 export default function Home() {
   const [loading, setLoading] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const router = useRouter();
 
   const handleStart = () => {
@@ -68,9 +70,12 @@ export default function Home() {
 
             <p className="text-sm md:text-base ">
               Sie haben bereits einen Scan durchgeführt oder besitzen ein Konto in der FeetF1rst App? Behalten Sie alle Ihre Daten und Empfehlungen jederzeit im Blick!{" "}
-              <Link href="" className="underline font-bold">
+              <button 
+                className="underline font-bold cursor-pointer"
+                onClick={() => setIsModalOpen(true)}
+              >
                 Jetzt anmelden!
-              </Link>
+              </button>
             </p>
             <Link
               href="#"
@@ -89,6 +94,12 @@ export default function Home() {
           </div>
         </div>
       </div>
+      
+      {/* Register Email Modal */}
+      <RegisterEmailModal 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)} 
+      />
     </div>
   );
 }

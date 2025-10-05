@@ -99,7 +99,7 @@ export const changePassword = async (oldPassword, newPassword) => {
 };
 
 
-// add partner 
+// add partner  
 export const addPartner = async (partnerData) => {
     try {
         const response = await axiosClient.post('/partner/create', partnerData);

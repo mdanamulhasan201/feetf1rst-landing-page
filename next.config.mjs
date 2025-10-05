@@ -10,7 +10,7 @@ const nextConfig = {
       },
       {
         protocol: 'https',
-        hostname: 'backend.feetf1rst.tech',
+        hostname: 'scholars-should-walls-photographers.trycloudflare.com',
       },
     ],
   },

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-// import { Input } from '@/components/ui/input';
+
 import { Input } from '../../../components/ui/input';
 import { Button } from '../../../components/ui/button';
 import { toast } from 'react-hot-toast';
@@ -20,6 +20,13 @@ export default function PartnerModal({ open, onOpenChange, onSuccess, partnerId 
     const [showPassword, setShowPassword] = useState(false);
     const [isLoadingPartner, setIsLoadingPartner] = useState(false);
     const [partnerData, setPartnerData] = useState(null);
+    const [name, setName] = useState('');
+    const [phone, setPhone] = useState('');
+    const [absenderEmail, setAbsenderEmail] = useState('');
+    const [bankName, setBankName] = useState('');
+    const [bankNumber, setBankNumber] = useState('');
+    const [busnessName, setBusnessName] = useState('');
+    const [hauptstandortStr, setHauptstandortStr] = useState('');
 
     const isEditMode = !!partnerId;
 
@@ -28,6 +35,13 @@ export default function PartnerModal({ open, onOpenChange, onSuccess, partnerId 
             setEmail('');
             setPassword('');
             setPartnerData(null);
+            setName('');
+            setPhone('');
+            setAbsenderEmail('');
+            setBankName('');
+            setBankNumber('');
+            setBusnessName('');
+            setHauptstandortStr('');
         }
     }, [open]);
 
@@ -43,6 +57,13 @@ export default function PartnerModal({ open, onOpenChange, onSuccess, partnerId 
                 if (partner) {
                     setPartnerData(partner);
                     setEmail(partner.email || '');
+                    setName(partner.name || '');
+                    setPhone(partner.phone || '');
+                    setAbsenderEmail(partner.absenderEmail || '');
+                    setBankName(partner.bankName || '');
+                    setBankNumber(partner.bankNumber || '');
+                    setBusnessName(partner.busnessName || '');
+                    setHauptstandortStr(Array.isArray(partner.hauptstandort) ? partner.hauptstandort.join(', ') : '');
                 } else {
                     toast.error('Invalid partner data structure');
                 }
@@ -72,6 +93,19 @@ export default function PartnerModal({ open, onOpenChange, onSuccess, partnerId 
             if (password) {
                 data.password = password;
             }
+            if (name) data.name = name;
+            if (phone) data.phone = phone;
+            if (absenderEmail) data.absenderEmail = absenderEmail;
+            if (bankName) data.bankName = bankName;
+            if (bankNumber) data.bankNumber = bankNumber;
+            if (busnessName) data.busnessName = busnessName;
+            if (hauptstandortStr && hauptstandortStr.trim()) {
+                const list = hauptstandortStr
+                    .split(',')
+                    .map((s) => s.trim())
+                    .filter(Boolean);
+                if (list.length > 0) data.hauptstandort = list;
+            }
 
             let response;
             if (isEditMode) {
@@ -86,6 +120,12 @@ export default function PartnerModal({ open, onOpenChange, onSuccess, partnerId 
             } else {
                 if (!password) {
                     throw new Error('Password is required for new partners');
+                }
+                // On create, enforce required business fields as requested
+                const requiredOnCreate = [name, phone, absenderEmail, bankName, bankNumber, busnessName, hauptstandortStr];
+                const allProvided = requiredOnCreate.every((v) => (typeof v === 'string' ? v.trim() : v));
+                if (!allProvided) {
+                    throw new Error('All fields are required for creating a partner');
                 }
                 response = await addPartner(data);
                 if (response?.success || response?.data) {
@@ -106,7 +146,7 @@ export default function PartnerModal({ open, onOpenChange, onSuccess, partnerId 
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-[425px]">
+            <DialogContent className="sm:max-w-2xl">
                 <DialogHeader>
                     <DialogTitle>
                         {isEditMode ? `Update Partner` : 'Add New Partner'}
@@ -118,8 +158,24 @@ export default function PartnerModal({ open, onOpenChange, onSuccess, partnerId 
                         <div className="w-8 h-8 border-4 border-green-600 border-t-transparent rounded-full animate-spin" />
                     </div>
                 ) : (
-                    <form onSubmit={handleSubmit} className="space-y-4 mt-4">
-                        <div>
+                    <form onSubmit={handleSubmit} className="mt-4 space-y-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                            <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+                                Name
+                            </label>
+                            <Input
+                                id="name"
+                                type="text"
+                                value={name}
+                                onChange={(e) => setName(e.target.value)}
+                                placeholder="Enter partner's full name"
+                                className="w-full"
+                                required={!isEditMode}
+                            />
+                            </div>
+
+                            <div>
                             <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
                                 Email
                             </label>
@@ -132,31 +188,124 @@ export default function PartnerModal({ open, onOpenChange, onSuccess, partnerId 
                                 className="w-full"
                                 required
                             />
-                        </div>
+                            </div>
 
-                        <div>
-                            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-                                {isEditMode ? 'New Password (optional)' : 'Password'}
+                            <div>
+                            <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
+                                Phone
                             </label>
-                            <div className="relative">
-                                <Input
-                                    id="password"
-                                    type={showPassword ? "text" : "password"}
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    placeholder={isEditMode ? "************" : "Enter password"}
-                                    className="w-full pr-10"
-                                    required={!isEditMode}
-                                />
-                                <button
-                                    type="button"
-                                    onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute cursor-pointer inset-y-0 right-0 pr-3 flex items-center text-gray-500 hover:text-gray-700"
-                                >
-                                    {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                                </button>
+                            <Input
+                                id="phone"
+                                type="tel"
+                                value={phone}
+                                onChange={(e) => setPhone(e.target.value)}
+                                placeholder="Enter phone number"
+                                className="w-full"
+                                required={!isEditMode}
+                            />
+                            </div>
+
+                            <div>
+                            <label htmlFor="absenderEmail" className="block text-sm font-medium text-gray-700 mb-1">
+                                Absender Email
+                            </label>
+                            <Input
+                                id="absenderEmail"
+                                type="email"
+                                value={absenderEmail}
+                                onChange={(e) => setAbsenderEmail(e.target.value)}
+                                placeholder="Enter sender email"
+                                className="w-full"
+                                required={!isEditMode}
+                            />
+                            </div>
+
+                            <div>
+                            <label htmlFor="busnessName" className="block text-sm font-medium text-gray-700 mb-1">
+                                Business Name
+                            </label>
+                            <Input
+                                id="busnessName"
+                                type="text"
+                                value={busnessName}
+                                onChange={(e) => setBusnessName(e.target.value)}
+                                placeholder="Enter business name"
+                                className="w-full"
+                                required={!isEditMode}
+                            />
+                            </div>
+
+                            <div>
+                            <label htmlFor="bankName" className="block text-sm font-medium text-gray-700 mb-1">
+                                Bank Name
+                            </label>
+                            <Input
+                                id="bankName"
+                                type="text"
+                                value={bankName}
+                                onChange={(e) => setBankName(e.target.value)}
+                                placeholder="Enter bank name"
+                                className="w-full"
+                                required={!isEditMode}
+                            />
+                            </div>
+
+                            <div>
+                            <label htmlFor="bankNumber" className="block text-sm font-medium text-gray-700 mb-1">
+                                Bank Number / IBAN
+                            </label>
+                            <Input
+                                id="bankNumber"
+                                type="text"
+                                value={bankNumber}
+                                onChange={(e) => setBankNumber(e.target.value)}
+                                placeholder="Enter bank account number"
+                                className="w-full"
+                                required={!isEditMode}
+                            />
+                            </div>
+
+                            <div>
+                            <label htmlFor="hauptstandort" className="block text-sm font-medium text-gray-700 mb-1">
+                                Hauptstandort (comma-separated)
+                            </label>
+                            <Input
+                                id="hauptstandort"
+                                type="text"
+                                value={hauptstandortStr}
+                                onChange={(e) => setHauptstandortStr(e.target.value)}
+                                placeholder="e.g. Berlin, Hamburg"
+                                className="w-full"
+                                required={!isEditMode}
+                            />
                             </div>
                         </div>
+
+                        {!isEditMode && (
+                            <div>
+                                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+                                    Password
+                                </label>
+                                <div className="relative">
+                                    <Input
+                                        id="password"
+                                        type={showPassword ? "text" : "password"}
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        placeholder="Enter password"
+                                        className="w-full pr-10"
+                                        required
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        className="absolute cursor-pointer inset-y-0 right-0 pr-3 flex items-center text-gray-500 hover:text-gray-700"
+                                    >
+                                        {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                                    </button>
+                                </div>
+                            </div>
+                        )}
 
                         <DialogFooter className="flex gap-2 mt-6">
                             <Button
