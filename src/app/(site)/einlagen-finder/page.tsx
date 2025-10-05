@@ -130,7 +130,7 @@ export default function EinlagenFinder() {
                         setSelectedCategory(null)
                     }}
                     category={selectedCategory}
-                    // categoryData={null}
+                    categoryData={null}
                 />
             )}
         </>
