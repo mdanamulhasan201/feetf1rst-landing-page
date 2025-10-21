@@ -10,7 +10,7 @@ const nextConfig = {
       },
       {
         protocol: 'https',
-        hostname: 'scholars-should-walls-photographers.trycloudflare.com',
+        hostname: 'apparel-yourself-fairy-citysearch.trycloudflare.com',
       },
     ],
   },

@@ -24,14 +24,17 @@ import {
   Image as ImageIcon,
   Plus
 } from "lucide-react"
-import { Badge } from "../../../../components/ui/badge"
+// import { Badge } from "../../../../components/ui/badge"
 import { Checkbox } from "../../../../components/ui/checkbox"
 import { Separator } from "../../../../components/ui/separator"
 import Image from 'next/image'
 import { createProducts, getProductById, updateProduct, deleteSingleImage, getCharacteristics, getAllCategories, getSubCategories, getCategoryQuestions } from "../../../../apis/productsApis";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "react-hot-toast";
-import JoditEditor from "jodit-react";
+// import JoditEditor from "jodit-react";
+import ShoeSpecifications from "../../../../components/shoes/ShoeSpecifications";
+import AdditionalInformation from "../../../../components/shoes/AdditionalInformation";
+import BasicInformation from "../../../../components/shoes/BasicInformation";
 
 
 const colorMap = {
@@ -184,9 +187,6 @@ export default function CreateProducts() {
     colorVariants: [],
     characteristics: []
   })
-
-  const availableSizes = ['35', '36', '37', '38', '39', '40', '41', '42', '43', '44', '45', '46', '47']
-  const genderOptions = ['Male', 'Female', 'Unisex']
 
   // Update this useEffect that handles product data fetching
   useEffect(() => {
@@ -371,56 +371,9 @@ export default function CreateProducts() {
 
   // Handle select changes
   const handleSelectChange = (name, value) => {
-    if (name === 'characteristics') {
-      setFormData(prev => ({
-        ...prev,
-        characteristics: prev.characteristics.includes(value)
-          ? prev.characteristics.filter(id => id !== value)
-          : [...prev.characteristics, value]
-      }));
-    } else {
-      setFormData(prev => ({ ...prev, [name]: value }));
-    }
+    setFormData(prev => ({ ...prev, [name]: value }));
   }
 
-  // Handle size selection
-  const handleSizeToggle = (size) => {
-    setFormData(prev => {
-      const currentSizes = [...prev.size];
-      const currentQuantities = { ...prev.sizeQuantities };
-
-      if (currentSizes.includes(size)) {
-        // Remove size and its quantity when deselected
-        delete currentQuantities[size];
-        return {
-          ...prev,
-          size: currentSizes.filter(s => s !== size),
-          sizeQuantities: currentQuantities
-        };
-      } else {
-        // Add size with initial quantity of 0
-        return {
-          ...prev,
-          size: [...currentSizes, size],
-          sizeQuantities: {
-            ...currentQuantities,
-            [size]: ""
-          }
-        };
-      }
-    });
-  };
-
-  const handleSizeQuantityChange = (size, quantity) => {
-    const newQuantity = quantity === '' ? 0 : parseInt(quantity) || 0;
-    setFormData(prev => ({
-      ...prev,
-      sizeQuantities: {
-        ...prev.sizeQuantities,
-        [size]: newQuantity
-      }
-    }));
-  };
 
   // Handle availability toggle
   const handleAvailabilityToggle = (checked) => {
@@ -1011,235 +964,176 @@ export default function CreateProducts() {
 
           <CardContent className="space-y-6">
             {/* Basic Information */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-medium">Basic Information</h3>
+            <BasicInformation 
+              formData={formData}
+              setFormData={setFormData}
+              brandOptions={brandOptions}
+              shoeTypeOptions={shoeTypeOptions}
+              handleChange={handleChange}
+              handleSelectChange={handleSelectChange}
+            />
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="productName">Product Name *</Label>
-                  <Input
-                    id="productName"
-                    name="productName"
-                    value={formData.productName}
-                    onChange={handleChange}
-                    placeholder="Enter product name"
-                    required
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="brand">Brand *</Label>
-                  <Select
-                    value={formData.brand}
-                    onValueChange={(value) => handleSelectChange('brand', value)}
-                  >
-                    <SelectTrigger className="w-full" id="brand">
-                      <SelectValue placeholder="Select brand" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {brandOptions.map(option => (
-                        <SelectItem key={option.value} value={option.value}>
-                          {option.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2 w-full">
-                  <Label htmlFor="typeOfShoes">Type of Shoes</Label>
-                  <Select
-                    value={formData.typeOfShoes}
-                    onValueChange={(value) => handleSelectChange('typeOfShoes', value)}
-                  >
-                    <SelectTrigger className="w-full" id="typeOfShoes">
-                      <SelectValue placeholder="Select type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {shoeTypeOptions.map(option => (
-                        <SelectItem key={option.value} value={option.value}>
-                          {option.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+            {/* CATEGORIZATION & QUESTIONS */}
+            <div className="space-y-6 my-7">
+              <div>
+                <CardTitle>Product Categorization & Questions</CardTitle>
+                <CardDescription>Select category and answer relevant questions</CardDescription>
               </div>
-              {/* CATEGORIZATION & QUESTIONS */}
-              <div className="space-y-6 my-7">
-                <div>
-                  <CardTitle>Product Categorization & Questions</CardTitle>
-                  <CardDescription>Select category and answer relevant questions</CardDescription>
-                </div>
-                <div className="space-y-4">
-                  <div className='flex gap-4'>
-                    {/* Category Selection */}
+              <div className="space-y-4">
+                <div className='flex gap-4'>
+                  {/* Category Selection */}
+                  <div className="space-y-2 w-1/2">
+                    <Label>Category *</Label>
+                    <Select
+                      value={selectedCategory}
+                      onValueChange={handleCategoryChange}
+                    >
+                      <SelectTrigger className="w-full">
+                        {isCategoryLoading ? (
+                          <div className="flex items-center gap-2">
+                            <div className="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-gray-600" />
+                            <span className="text-gray-500">Loading...</span>
+                          </div>
+                        ) : (
+                          <SelectValue placeholder="Select category" />
+                        )}
+                      </SelectTrigger>
+                      <SelectContent>
+                        {categories && categories.map(category => (
+                          <SelectItem key={category.slug} value={category.slug}>
+                            {category.title}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Subcategory Selection */}
+                  {subCategories.length > 0 && (
                     <div className="space-y-2 w-1/2">
-                      <Label>Category *</Label>
+                      <Label>Subcategory</Label>
                       <Select
-                        value={selectedCategory}
-                        onValueChange={handleCategoryChange}
+                        value={selectedSubCategory}
+                        onValueChange={handleSubCategoryChange}
                       >
                         <SelectTrigger className="w-full">
-                          {isCategoryLoading ? (
+                          {isSubCategoryLoading ? (
                             <div className="flex items-center gap-2">
                               <div className="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-gray-600" />
                               <span className="text-gray-500">Loading...</span>
                             </div>
                           ) : (
-                            <SelectValue placeholder="Select category" />
+                            <SelectValue placeholder="Select subcategory" />
                           )}
                         </SelectTrigger>
                         <SelectContent>
-                          {categories && categories.map(category => (
-                            <SelectItem key={category.slug} value={category.slug}>
-                              {category.title}
+                          {subCategories.map(subCat => (
+                            <SelectItem key={subCat.slug} value={subCat.slug}>
+                              {subCat.title}
                             </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
                     </div>
+                  )}
+                </div>
 
-                    {/* Subcategory Selection */}
-                    {subCategories.length > 0 && (
-                      <div className="space-y-2 w-1/2">
-                        <Label>Subcategory</Label>
+                {/* Questions */}
+                {questions.length > 0 && (
+                  <div className="space-y-6 mt-6">
+                    <h3 className="text-lg font-medium">Product Questions</h3>
+                    {questions.map(question => (
+                      <div key={question.question_key} className="p-4 border rounded-lg bg-gray-50 space-y-3">
+                        <Label className="text-base font-medium text-gray-900">
+                          {question.question}
+                          {question.required && <span className="text-red-500 ml-1">*</span>}
+                        </Label>
+
                         <Select
-                          value={selectedSubCategory}
-                          onValueChange={handleSubCategoryChange}
+                          value={selectedAnswers[question.question_key]?.value || ''}
+                          onValueChange={(value) => {
+                            const selectedOption = question.options.find(
+                              opt => `${question.question_key}_${opt.id}` === value
+                            );
+                            if (selectedOption) {
+                              handleOptionSelect(
+                                question.question_key,
+                                value,
+                                {
+                                  question: question.question,
+                                  option: selectedOption.option,
+                                  nextQuestions: selectedOption.nextQuestions
+                                }
+                              );
+                            }
+                          }}
                         >
-                          <SelectTrigger className="w-full">
-                            {isSubCategoryLoading ? (
-                              <div className="flex items-center gap-2">
-                                <div className="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-gray-600" />
-                                <span className="text-gray-500">Loading...</span>
-                              </div>
-                            ) : (
-                              <SelectValue placeholder="Select subcategory" />
-                            )}
+                          <SelectTrigger className="w-full bg-white">
+                            <SelectValue placeholder="Choose an answer" />
                           </SelectTrigger>
                           <SelectContent>
-                            {subCategories.map(subCat => (
-                              <SelectItem key={subCat.slug} value={subCat.slug}>
-                                {subCat.title}
+                            {question.options?.map(option => (
+                              <SelectItem
+                                key={`${question.question_key}_${option.id}`}
+                                value={`${question.question_key}_${option.id}`}
+                              >
+                                {option.option}
                               </SelectItem>
                             ))}
                           </SelectContent>
                         </Select>
                       </div>
+                    ))}
+
+                    {/* Nested Questions */}
+                    {nextQuestions && nextQuestions.length > 0 && (
+                      <div className="mt-6 space-y-6">
+                        <h3 className="text-lg font-medium">Additional Questions</h3>
+                        {nextQuestions.map(question => (
+                          <div key={question.id} className="p-4 border rounded-lg bg-gray-50 space-y-3">
+                            <Label className="text-base font-medium text-gray-900">
+                              {question.question}
+                            </Label>
+
+                            <Select
+                              value={selectedAnswers[`nested_${question.id}`]?.value || ''}
+                              onValueChange={(value) => {
+                                const selectedOption = question.options.find(
+                                  opt => `nested_${question.id}_${opt.id}` === value
+                                );
+                                if (selectedOption) {
+                                  handleOptionSelect(
+                                    question.id,
+                                    value,
+                                    {
+                                      question: question.question,
+                                      option: selectedOption.option
+                                    },
+                                    true // Mark as nested
+                                  );
+                                }
+                              }}
+                            >
+                              <SelectTrigger className="w-full bg-white">
+                                <SelectValue placeholder="Choose an answer" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {question.options?.map(option => (
+                                  <SelectItem
+                                    key={`nested_${question.id}_${option.id}`}
+                                    value={`nested_${question.id}_${option.id}`}
+                                  >
+                                    {option.option}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        ))}
+                      </div>
                     )}
                   </div>
-
-                  {/* Questions */}
-                  {questions.length > 0 && (
-                    <div className="space-y-6 mt-6">
-                      <h3 className="text-lg font-medium">Product Questions</h3>
-                      {questions.map(question => (
-                        <div key={question.question_key} className="p-4 border rounded-lg bg-gray-50 space-y-3">
-                          <Label className="text-base font-medium text-gray-900">
-                            {question.question}
-                            {question.required && <span className="text-red-500 ml-1">*</span>}
-                          </Label>
-
-                          <Select
-                            value={selectedAnswers[question.question_key]?.value || ''}
-                            onValueChange={(value) => {
-                              const selectedOption = question.options.find(
-                                opt => `${question.question_key}_${opt.id}` === value
-                              );
-                              if (selectedOption) {
-                                handleOptionSelect(
-                                  question.question_key,
-                                  value,
-                                  {
-                                    question: question.question,
-                                    option: selectedOption.option,
-                                    nextQuestions: selectedOption.nextQuestions
-                                  }
-                                );
-                              }
-                            }}
-                          >
-                            <SelectTrigger className="w-full bg-white">
-                              <SelectValue placeholder="Choose an answer" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {question.options?.map(option => (
-                                <SelectItem
-                                  key={`${question.question_key}_${option.id}`}
-                                  value={`${question.question_key}_${option.id}`}
-                                >
-                                  {option.option}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      ))}
-
-                      {/* Nested Questions */}
-                      {nextQuestions && nextQuestions.length > 0 && (
-                        <div className="mt-6 space-y-6">
-                          <h3 className="text-lg font-medium">Additional Questions</h3>
-                          {nextQuestions.map(question => (
-                            <div key={question.id} className="p-4 border rounded-lg bg-gray-50 space-y-3">
-                              <Label className="text-base font-medium text-gray-900">
-                                {question.question}
-                              </Label>
-
-                              <Select
-                                value={selectedAnswers[`nested_${question.id}`]?.value || ''}
-                                onValueChange={(value) => {
-                                  const selectedOption = question.options.find(
-                                    opt => `nested_${question.id}_${opt.id}` === value
-                                  );
-                                  if (selectedOption) {
-                                    handleOptionSelect(
-                                      question.id,
-                                      value,
-                                      {
-                                        question: question.question,
-                                        option: selectedOption.option
-                                      },
-                                      true // Mark as nested
-                                    );
-                                  }
-                                }}
-                              >
-                                <SelectTrigger className="w-full bg-white">
-                                  <SelectValue placeholder="Choose an answer" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  {question.options?.map(option => (
-                                    <SelectItem
-                                      key={`nested_${question.id}_${option.id}`}
-                                      value={`nested_${question.id}_${option.id}`}
-                                    >
-                                      {option.option}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* product description */}
-              <div className="space-y-2">
-                <Label htmlFor="productDesc">Product Description *</Label>
-                <div className="border rounded-md">
-                  <JoditEditor
-                    value={formData.productDesc}
-                    config={editorConfig}
-                    onChange={newContent => {
-                      setFormData(prev => ({ ...prev, productDesc: newContent }));
-                    }}
-                  />
-                </div>
+                )}
               </div>
             </div>
 
@@ -1297,246 +1191,19 @@ export default function CreateProducts() {
             <Separator />
 
             {/* Shoe Specifications */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-medium">Shoe Specifications</h3>
-
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label className="text-base font-medium">Available Sizes & Quantities *</Label>
-                    <p className="text-sm text-gray-500 mt-1">Select sizes and specify quantities for each size</p>
-                  </div>
-                  <Badge variant="outline" className="font-normal">
-                    {formData.size.length} sizes selected
-                  </Badge>
-                </div>
-
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                  {availableSizes.map(size => (
-                    <div
-                      key={size}
-                      className={`relative group transition-all duration-200 ${formData.size.includes(size)
-                        ? 'border-2 border-green-500 bg-green-50'
-                        : 'border border-gray-200 hover:border-gray-300 hover:shadow-sm'
-                        } rounded-lg p-3`}
-                    >
-                      <div className="flex flex-col space-y-2">
-                        <div className="flex items-center justify-between">
-                          <div
-                            onClick={() => handleSizeToggle(size)}
-                            className="flex items-center space-x-2 cursor-pointer"
-                          >
-                            <div className={`
-                              w-6 h-6 flex items-center justify-center rounded
-                              ${formData.size.includes(size)
-                                ? 'bg-green-500 text-white'
-                                : 'bg-gray-100 text-gray-600'}
-                            `}>
-                              {size}
-                            </div>
-                            <span className={`text-sm ${formData.size.includes(size) ? 'text-green-700' : 'text-gray-600'}`}>
-                              EU
-                            </span>
-                          </div>
-
-                          {formData.size.includes(size) && (
-                            <button
-                              onClick={() => handleSizeToggle(size)}
-                              className="opacity-0 group-hover:opacity-100 cursor-pointer transition-opacity duration-200 
-                                       text-gray-400 hover:text-red-500 focus:outline-none"
-                            >
-                              <X className="h-4 w-4" />
-                            </button>
-                          )}
-                        </div>
-
-                        {formData.size.includes(size) && (
-                          <div className="relative">
-                            <Input
-                              type="number"
-                              min="0"
-                              value={formData.sizeQuantities[size]}
-                              onChange={(e) => handleSizeQuantityChange(size, e.target.value)}
-                              className="h-8 text-sm pr-8 bg-white"
-                              placeholder="Qty"
-                            />
-                            <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-gray-400">
-                              pcs
-                            </span>
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Hover effect for unselected sizes */}
-                      {!formData.size.includes(size) && (
-                        <div
-                          className="absolute inset-0 bg-gray-50/80 opacity-0 group-hover:opacity-100 
-                                   transition-opacity duration-200 rounded-lg flex items-center 
-                                   justify-center cursor-pointer"
-                          onClick={() => handleSizeToggle(size)}
-                        >
-                          <Plus className="h-5 w-5 text-gray-400" />
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="feetFirstFit">Feet First Fit (%)</Label>
-                  <Input
-                    id="feetFirstFit"
-                    name="feetFirstFit"
-                    type="number"
-                    min="0"
-                    max="100"
-                    value={formData.feetFirstFit}
-                    onChange={handleChange}
-                    placeholder="90"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="footLength">Foot Length (mm)</Label>
-                  <Input
-                    id="footLength"
-                    name="footLength"
-                    value={formData.footLength}
-                    onChange={handleChange}
-                    placeholder="e.g., 250-270"
-                  />
-                </div>
-
-              </div> */}
-
-              <div className="space-y-2">
-                <Label htmlFor="technicalData">Technical Data</Label>
-                <div className="border rounded-md">
-                  <JoditEditor
-                    value={formData.technicalData}
-                    config={editorConfig}
-                    onChange={newContent => {
-                      setFormData(prev => ({ ...prev, technicalData: newContent }));
-                    }}
-                  />
-                </div>
-              </div>
-            </div>
+            <ShoeSpecifications 
+              formData={formData}
+              setFormData={setFormData}
+            />
 
             <Separator />
 
             {/* Additional Information */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-medium">Additional Information</h3>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
-                {/* <div className="space-y-2 w-full">
-                  <Label htmlFor="company">Company/Manufacturer</Label>
-                  <Input
-                    id="company"
-                    name="company"
-                    value={formData.company}
-                    onChange={handleChange}
-                    placeholder="Enter company name"
-                    className="w-full"
-                  />
-                </div> */}
-
-                {/* GENDER */}
-                <div className="space-y-2 w-full">
-                  <Label htmlFor="gender">Gender *</Label>
-                  <Select
-                    value={formData.gender}
-                    onValueChange={(value) => handleSelectChange('gender', value)}
-                  >
-                    <SelectTrigger className="w-full" id="gender">
-                      <SelectValue placeholder="Select gender" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {genderOptions.map(option => (
-                        <SelectItem key={option} value={option.toLowerCase()}>
-                          {option}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* CHARACTERISTICS */}
-                <div className="space-y-2 w-full">
-                  <Label htmlFor="characteristics">Characteristics *</Label>
-                  <Select
-                    value=""
-                    onValueChange={(value) => handleSelectChange('characteristics', value)}
-                    multiple
-                  >
-                    <SelectTrigger className="w-full" id="characteristics">
-                      <SelectValue placeholder="Select characteristics">
-                        {formData.characteristics.length > 0
-                          ? `${formData.characteristics.length} selected`
-                          : "Select characteristics"}
-                      </SelectValue>
-                    </SelectTrigger>
-                    <SelectContent>
-                      {characteristics.map((item) => (
-                        <SelectItem
-                          key={item.id}
-                          value={item.id.toString()}
-                        >
-                          <div className="flex items-center justify-between w-full gap-2">
-                            <div>
-                              <p>{item.text}</p>
-                            </div>
-                            <div className="flex items-center gap-2">
-
-                              <div className="w-12 h-12 rounded-full">
-                                <Image
-                                  src={item.image}
-                                  alt={item.text}
-                                  width={100}
-                                  height={100}
-                                  className="w-full h-full rounded-full"
-                                />
-                              </div>
-                              {formData.characteristics.includes(item.id.toString()) && (
-                                <span className="font-semibold text-lg text-green-600">✓</span>
-                              )}
-                            </div>
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    {formData.characteristics.map((charId) => {
-                      const char = characteristics.find(c => c.id.toString() === charId);
-                      return char ? (
-                        <Badge
-                          key={charId}
-                          variant="secondary"
-                          className="flex items-center gap-2"
-                        >
-                          {char.text}
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              handleSelectChange('characteristics', charId);
-                            }}
-                            className="ml-1 hover:text-destructive"
-                          >
-                            <X className="h-3 w-3 cursor-pointer" />
-                          </button>
-                        </Badge>
-                      ) : null;
-                    })}
-                  </div>
-                </div>
-              </div>
-            </div>
+            <AdditionalInformation 
+              formData={formData}
+              setFormData={setFormData}
+              characteristics={characteristics}
+            />
 
             <Separator />
 
