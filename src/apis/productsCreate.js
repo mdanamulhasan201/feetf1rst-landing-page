@@ -73,3 +73,14 @@ export const getOrderById = async (id) => {
         throw new Error(error.response?.data?.message || error.message || 'Something went wrong');
     }
 }
+
+
+// status change in products 
+export const statusChangeInOrder = async (id, status) => {
+    try {
+        const response = await axiosClient.patch(`/custom_shafts/update-status/${id}`, { status });
+        return response.data;
+    } catch (error) {
+        throw new Error(error.response?.data?.message || error.message || 'Something went wrong');
+    }
+}

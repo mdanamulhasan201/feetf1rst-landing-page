@@ -1,14 +1,14 @@
 'use client'
 import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { getOrderById } from '../../../../../../apis/productsCreate';
+import { getOrderById, statusChangeInOrder } from '../../../../../../apis/productsCreate';
 import { Button } from '../../../../../../components/ui/button';
 import { Badge } from '../../../../../../components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../../../../../components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../../../../components/ui/select';
-import { Textarea } from '../../../../../../components/ui/textarea';
-import { ArrowLeft, ArrowRight, Save, FileTextIcon } from 'lucide-react';
+import { ArrowLeft, ArrowRight } from 'lucide-react';
 import InvoiceGenerator from '../../../../../../components/dashboard/Invoice/InvoiceGenerator';
+import toast from 'react-hot-toast';
 
 export default function OrderDetails() {
     const params = useParams();
@@ -20,16 +20,18 @@ export default function OrderDetails() {
     const [error, setError] = useState(null);
     const [currentStatus, setCurrentStatus] = useState('neu');
     const [productionNotes, setProductionNotes] = useState('');
-    const [isSaving, setIsSaving] = useState(false);
 
-    // Status workflow configuration
+    const [statusError, setStatusError] = useState(null);
+    const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
+
+    // Status workflow configuration - using valid statuses from API
     const statusWorkflow = [
-        { key: 'neu', label: 'Neu', next: 'in_production' },
-        { key: 'in_production', label: 'Zu Produzent Abgeschickt', next: 'Zu_Produzent_Abgeschickt' },
-        { key: 'sent_to_producer', label: 'In Bearbeitung', next: 'In_Bearbeitung' },
-        { key: 'Zu_Kunde_Abgeschickt', label: 'Zu Kunde abgeschickt', next: 'Zu_Kunde_Abgeschickt' },
-        { key: 'Bei_uns_angekommen', label: 'Bei uns angekommen', next: 'Bei uns angekommen' },
-        { key: 'Beim_Kunden_angekommen', label: 'Beim Kunden angekommen', next: 'Beim Kunden angekommen' }
+        { key: 'Neu', label: 'Neu' },
+        { key: 'Zu_Produzent_abgeschickt', label: 'Zu Produzent abgeschickt' },
+        { key: 'In_Bearbeitung', label: 'In Bearbeitung' },
+        { key: 'Zu_Kunde_abgeschickt', label: 'Zu Kunde abgeschickt' },
+        { key: 'Bei_uns_angekommen', label: 'Bei uns angekommen' },
+        { key: 'Beim_Kunden_angekommen', label: 'Beim Kunden angekommen' }
     ];
 
     const getCurrentStatusIndex = () => {
@@ -54,6 +56,8 @@ export default function OrderDetails() {
                 setOrder(response.data);
                 // Set initial production notes if available
                 setProductionNotes(response.data.productionNotes || '');
+                // Set initial status from order data
+                setCurrentStatus(response.data.status || 'Neu');
             } else {
                 setError('Order not found');
             }
@@ -70,21 +74,43 @@ export default function OrderDetails() {
         }
     }, [orderId]);
 
-    const handleStatusChange = (newStatus) => {
-        setCurrentStatus(newStatus);
-    };
+    const handleStatusChange = async (newStatus) => {
+        try {
+            setIsUpdatingStatus(true);
+            setStatusError(null);
 
-    const handleNextStep = () => {
-        const nextStatus = getNextStatus();
-        if (nextStatus) {
-            setCurrentStatus(nextStatus.key);
+            const response = await statusChangeInOrder(orderId, newStatus);
+
+            if (response.success) {
+                setCurrentStatus(newStatus);
+                // Update the order data with new status
+                setOrder(prev => ({ ...prev, status: newStatus }));
+                toast.success('Status erfolgreich aktualisiert!');
+            } else {
+                const errorMsg = response.message || 'Failed to update status';
+                setStatusError(errorMsg);
+                toast.error(errorMsg);
+            }
+        } catch (err) {
+            const errorMsg = err.message || 'Error updating status';
+            setStatusError(errorMsg);
+            toast.error(errorMsg);
+        } finally {
+            setIsUpdatingStatus(false);
         }
     };
 
-    const handlePreviousStep = () => {
+    const handleNextStep = async () => {
+        const nextStatus = getNextStatus();
+        if (nextStatus) {
+            await handleStatusChange(nextStatus.key);
+        }
+    };
+
+    const handlePreviousStep = async () => {
         const prevStatus = getPreviousStatus();
         if (prevStatus) {
-            setCurrentStatus(prevStatus.key);
+            await handleStatusChange(prevStatus.key);
         }
     };
 
@@ -95,9 +121,9 @@ export default function OrderDetails() {
             console.log('Saving production notes:', productionNotes);
             // Simulate API call
             await new Promise(resolve => setTimeout(resolve, 1000));
-            alert('Production notes saved successfully!');
+            toast.success('Produktionsnotizen erfolgreich gespeichert!');
         } catch (err) {
-            alert('Error saving notes: ' + err.message);
+            toast.error('Fehler beim Speichern der Notizen: ' + err.message);
         } finally {
             setIsSaving(false);
         }
@@ -182,7 +208,7 @@ export default function OrderDetails() {
             </div>
 
             <div className="flex flex-col gap-4">
-                {/* Left Column - Individualisierung */}
+                {/* Individualisierung */}
                 <div className="space-y-6">
                     <Card className="shadow-none ">
                         <CardHeader>
@@ -273,7 +299,7 @@ export default function OrderDetails() {
 
                 </div>
 
-                {/* Right Column - Bestellverwaltung */}
+                {/*Bestellverwaltung */}
                 <div className="space-y-6">
                     <Card className="shadow-none ">
                         <CardHeader>
@@ -292,7 +318,7 @@ export default function OrderDetails() {
                                         variant="outline"
                                         size="sm"
                                         onClick={handlePreviousStep}
-                                        disabled={!getPreviousStatus()}
+                                        disabled={!getPreviousStatus() || isUpdatingStatus}
                                         className="flex items-center gap-2 cursor-pointer"
                                     >
                                         <ArrowLeft className="h-4 w-4" />
@@ -307,7 +333,7 @@ export default function OrderDetails() {
                                         variant="outline"
                                         size="sm"
                                         onClick={handleNextStep}
-                                        disabled={!nextStatusInfo}
+                                        disabled={!nextStatusInfo || isUpdatingStatus}
                                         className="flex items-center gap-2 cursor-pointer"
                                     >
                                         Nächste Stufe
@@ -315,12 +341,21 @@ export default function OrderDetails() {
                                     </Button>
                                 </div>
 
+                                {/* Status Error Display */}
+                                {statusError && (
+                                    <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
+                                        <p className="text-red-800 text-sm">
+                                            <strong>Fehler:</strong> {statusError}
+                                        </p>
+                                    </div>
+                                )}
+
                                 {/* Manual Status Selection */}
                                 <div className="space-y-3">
                                     <label className="text-sm font-medium text-gray-600">
                                         Oder Status manuell wählen:
                                     </label>
-                                    <Select value={currentStatus} onValueChange={handleStatusChange}>
+                                    <Select value={currentStatus} onValueChange={handleStatusChange} disabled={isUpdatingStatus}>
                                         <SelectTrigger className="w-full">
                                             <SelectValue />
                                         </SelectTrigger>
@@ -345,7 +380,7 @@ export default function OrderDetails() {
                             </div>
 
                             {/* Production Notes */}
-                            <div>
+                            {/* <div>
                                 <label className="text-sm font-medium text-gray-600 block mb-2">
                                     Produktionsnotizen
                                 </label>
@@ -365,7 +400,7 @@ export default function OrderDetails() {
                                         {isSaving ? 'Speichern...' : 'Status speichern'}
                                     </Button>
                                 </div>
-                            </div>
+                            </div> */}
                         </CardContent>
                     </Card>
 
