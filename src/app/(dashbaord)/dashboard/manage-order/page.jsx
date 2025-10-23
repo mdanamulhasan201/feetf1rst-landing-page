@@ -47,7 +47,7 @@ export default function ManageOrder() {
         router.replace(`/dashboard/manage-order${newURL}`, { scroll: false });
     };
 
-    const fetchOrders = async (page = 1, search = '') => {
+    const fetchOrders = async (page = 1, search = '', status = '') => {
         try {
             // Show search loading only if it's a search operation (not initial load)
             if (search && search !== '') {
@@ -56,7 +56,7 @@ export default function ManageOrder() {
                 setLoading(true);
             }
 
-            const response = await getAllOrder(page, limit, search);
+            const response = await getAllOrder(page, limit, search, status);
             setOrders(response.data || []);
             setPagination(response.pagination || {});
             setTotalPages(response.pagination?.totalPages || 1);
@@ -70,16 +70,20 @@ export default function ManageOrder() {
     };
 
     useEffect(() => {
-        fetchOrders(currentPage, debouncedSearchTerm);
+        fetchOrders(currentPage, debouncedSearchTerm, selectedStatus === 'all' ? '' : selectedStatus);
         updateURL(debouncedSearchTerm, currentPage);
-    }, [currentPage, debouncedSearchTerm]);
+    }, [currentPage, debouncedSearchTerm, selectedStatus]);
 
-    // Reset to first page when search term changes
+    // Reset to first page when search term or status changes
     useEffect(() => {
         if (debouncedSearchTerm !== searchTerm && debouncedSearchTerm !== '') {
             setCurrentPage(1);
         }
     }, [debouncedSearchTerm]);
+
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [selectedStatus]);
 
     // Handle URL changes on page load
     useEffect(() => {
@@ -115,10 +119,18 @@ export default function ManageOrder() {
     };
 
     const getStatusBadge = (order) => {
-        // Use actual order status from API response
-        // Since your API doesn't have status field, we'll show "Neu" as default
-        // You can add status field to your API response if needed
-        return <Badge className="bg-blue-100 text-blue-800">Neu</Badge>;
+        const status = order?.status || 'Neu';
+        const statusConfig = {
+            'Neu': { className: 'bg-blue-100 text-blue-800', label: 'Neu' },
+            'Zu_Produzent_abgeschickt': { className: 'bg-yellow-100 text-yellow-800', label: 'Zu Produzent abgeschickt' },
+            'In_Bearbeitung': { className: 'bg-orange-100 text-orange-800', label: 'In Bearbeitung' },
+            'Zu_Kunde_abgeschickt': { className: 'bg-purple-100 text-purple-800', label: 'Zu Kunde abgeschickt' },
+            'Bei_uns_angekommen': { className: 'bg-green-100 text-green-800', label: 'Bei uns angekommen' },
+            'Beim_Kunden_angekommen': { className: 'bg-emerald-100 text-emerald-800', label: 'Beim Kunden angekommen' }
+        };
+        
+        const config = statusConfig[status] || statusConfig['Neu'];
+        return <Badge className={config.className}>{config.label}</Badge>;
     };
 
     if (loading) {
@@ -202,10 +214,12 @@ export default function ManageOrder() {
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="all">Alle Status</SelectItem>
-                                <SelectItem value="neu">Neu</SelectItem>
-                                <SelectItem value="in_production">In Produktion</SelectItem>
-                                <SelectItem value="sent_to_producer">Zu Produzent abgeschickt</SelectItem>
-                                <SelectItem value="completed">Abgeschlossen</SelectItem>
+                                <SelectItem value="Neu">Neu</SelectItem>
+                                <SelectItem value="Zu_Produzent_abgeschickt">Zu Produzent abgeschickt</SelectItem>
+                                <SelectItem value="In_Bearbeitung">In Bearbeitung</SelectItem>
+                                <SelectItem value="Zu_Kunde_abgeschickt">Zu Kunde abgeschickt</SelectItem>
+                                <SelectItem value="Bei_uns_angekommen">Bei uns angekommen</SelectItem>
+                                <SelectItem value="Beim_Kunden_angekommen">Beim Kunden angekommen</SelectItem>
                             </SelectContent>
                         </Select>
                     </div>
