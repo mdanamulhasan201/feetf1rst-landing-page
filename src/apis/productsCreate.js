@@ -53,3 +53,23 @@ export const deleteProduct = async (id) => {
     }
 }
 
+
+// get all order 
+export const getAllOrder = async (page = number, limit = number, search = string) => {
+    try {
+        const response = await axiosClient.get(`/custom_shafts/get?page=${page}&limit=${limit}&search=${search}`);
+        return response.data;
+    } catch (error) {
+        throw new Error(error.response?.data?.message || error.message || 'Something went wrong');
+    }
+}
+
+// get order by id
+export const getOrderById = async (id) => {
+    try {
+        const response = await axiosClient.get(`/custom_shafts/get/${id}`);
+        return response.data;
+    } catch (error) {
+        throw new Error(error.response?.data?.message || error.message || 'Something went wrong');
+    }
+}
