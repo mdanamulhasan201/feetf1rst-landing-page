@@ -10,7 +10,7 @@ const nextConfig = {
       },
       {
         protocol: 'https',
-        hostname: 'blah-proc-regularly-wall.trycloudflare.com',
+           hostname: 'christmas-inside-workstation-irrigation.trycloudflare.com ',
       },
     ],
   },
