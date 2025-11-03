@@ -12,9 +12,9 @@ const nextConfig = {
         protocol: 'https',
            hostname: 'christmas-inside-workstation-irrigation.trycloudflare.com ',
       },
-        {
+      {
         protocol: 'https',
-           hostname: 'chemistry-supplemental-vatican-fixed.trycloudflare.com',
+        hostname: 'chemistry-supplemental-vatican-fixed.trycloudflare.com',
       },
     ],
   },
