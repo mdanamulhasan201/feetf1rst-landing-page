@@ -39,13 +39,11 @@ export default function AddProducts() {
     const [isLoadingProduct, setIsLoadingProduct] = useState(false)
 
     const categories = [
-        'Running Shoes',
-        'Casual Shoes',
-        'Sports Shoes',
-        'Formal Shoes',
-        'Sneakers',
-        'Boots',
-        'Sandals'
+        'Elegante Schuhe / Business-Schuhe',
+        'Laufschuhe',
+        'Freizeitschuhe',
+        'Sportschuhe',
+        
     ]
 
     const genders = [
