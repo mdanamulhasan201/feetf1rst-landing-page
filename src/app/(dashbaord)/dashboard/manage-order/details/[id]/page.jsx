@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../..
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../../../../components/ui/select';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import InvoiceGenerator from '../../../../../../components/dashboard/Invoice/InvoiceGenerator';
+import STLViewer from '../../../../../../components/dashboard/STLViewer';
 import toast from 'react-hot-toast';
 
 export default function OrderDetails() {
@@ -294,6 +295,29 @@ export default function OrderDetails() {
                                     </div>
                                 </div>
                             </div>
+
+                            {/* 3D Models Section */}
+                            {(order.image3d_1 || order.image3d_2) && (
+                                <div className="mt-6 pt-6 border-t border-gray-200">
+                                    <h3 className="text-lg font-semibold text-gray-800 mb-4">
+                                        3D-Modelle
+                                    </h3>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        {order.image3d_1 && (
+                                            <STLViewer 
+                                                stlUrl={order.image3d_1} 
+                                                label="3D-Modell 1" 
+                                            />
+                                        )}
+                                        {order.image3d_2 && (
+                                            <STLViewer 
+                                                stlUrl={order.image3d_2} 
+                                                label="3D-Modell 2" 
+                                            />
+                                        )}
+                                    </div>
+                                </div>
+                            )}
                         </CardContent>
                     </Card>
 
