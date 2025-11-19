@@ -10,12 +10,9 @@ const nextConfig = {
       },
       {
         protocol: 'https',
-           hostname: 'native-rep-framing-harry.trycloudflare.com',
+        hostname: 'bennett-kodak-cabinets-atlanta.trycloudflare.com',
       },
-      {
-        protocol: 'https',
-        hostname: 'chemistry-supplemental-vatican-fixed.trycloudflare.com',
-      },
+
     ],
   },
 }
