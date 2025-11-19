@@ -46,6 +46,9 @@ export default function AddProducts() {
         
     ]
 
+
+    // Gender options
+
     const genders = [
         'Herren',
         'Damen ',
