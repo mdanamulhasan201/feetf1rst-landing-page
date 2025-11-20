@@ -39,11 +39,12 @@ export default function AddProducts() {
     const [isLoadingProduct, setIsLoadingProduct] = useState(false)
 
     const categories = [
-        'Elegante Schuhe / Business-Schuhe',
-        'Laufschuhe',
-        'Freizeitschuhe',
-        'Sportschuhe',
-        
+        'Halbschuhe',
+        'Stiefel',
+        'Knöchelhoch',
+        'Sandalen',
+        'Bergschuhe',
+        'Business-Schuhe',
     ]
 
 
@@ -71,11 +72,11 @@ export default function AddProducts() {
                 setFormData({
                     name: product.name || '',
                     price: product.price || '',
-                    category: product.catagoary || '', // API uses 'catagoary'
+                    category: product.catagoary || '', 
                     gender: product.gender || '',
                     description: product.description || '',
-                    image: null, // Don't load existing image file
-                    imagePreview: product.image || null // Show existing image URL
+                    image: null, 
+                    imagePreview: product.image || null 
                 })
             } else {
                 toast.error('Failed to load product data')
