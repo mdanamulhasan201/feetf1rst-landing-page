@@ -127,11 +127,18 @@ export default function InvoiceGenerator({ order }) {
             doc.setTextColor(30, 30, 30);
 
             // Nome cliente with dashed line after colon
+            const resolvedCustomerName = order?.customer
+                ? `${order.customer?.vorname || ''} ${order.customer?.nachname || ''}`.trim() ||
+                (order.customer?.customerNumber ? `Kunde #${order.customer.customerNumber}` : '')
+                : order?.other_customer_number || 'Unbekannter Kunde';
             const clienteText = 'Nome cliente:';
             doc.text(clienteText, rightX, centerY - 8);
             const clienteLabelWidth = doc.getTextWidth(clienteText);
             const clienteDashStartX = rightX + clienteLabelWidth;
             drawDashedLine(clienteDashStartX, centerY - 5, pageWidth - margin, centerY - 5);
+            if (resolvedCustomerName) {
+                doc.text(resolvedCustomerName, clienteDashStartX + 2, centerY - 8);
+            }
 
             // Modello with dashed line after colon
             const modelloText = 'Modello:';
@@ -139,6 +146,10 @@ export default function InvoiceGenerator({ order }) {
             const modelloLabelWidth = doc.getTextWidth(modelloText);
             const modelloDashStartX = rightX + modelloLabelWidth;
             drawDashedLine(modelloDashStartX, centerY + 11, pageWidth - margin, centerY + 11);
+            const modelName = order?.maßschaft_kollektion?.name;
+            if (modelName) {
+                doc.text(modelName, modelloDashStartX + 2, centerY + 8);
+            }
 
             // Details list with dashed lines
             y += 80;
@@ -177,13 +188,86 @@ export default function InvoiceGenerator({ order }) {
                 detailsY += 8;
             });
 
+            // Polsterung checkboxes (if provided)
+            const polsterungOptions = ['Standard', 'Lasche', 'Ferse', 'Innen-Außenknöchel', 'Vorderfuß'];
+            const selectedPolsterung = new Set(
+                (order?.polsterung || '')
+                    .split(',')
+                    .map((item) => item.trim())
+                    .filter(Boolean)
+            );
+
+            const drawCheckbox = (x, y, label, checked) => {
+                const boxSize = 4;
+                const prevLineWidth = doc.getLineWidth();
+                doc.setDrawColor(90);
+                doc.setLineWidth(0.4);
+                doc.rect(x, y - boxSize + 1, boxSize, boxSize);
+
+                if (checked) {
+                    doc.setDrawColor(20);
+                    doc.setLineWidth(0.9);
+                    doc.line(x + 0.5, y - boxSize + 2, x + boxSize / 2, y - 1);
+                    doc.line(x + boxSize / 2, y - 1, x + boxSize - 0.4, y - boxSize + 0.6);
+                    doc.setDrawColor(90);
+                }
+
+                doc.setLineWidth(prevLineWidth);
+                doc.text(label, x + boxSize + 2, y);
+            };
+
+            if (selectedPolsterung.size) {
+                doc.setFont('helvetica', 'bold');
+                doc.text('Imbottitura (scelte cliente):', margin + 2, detailsY + 2);
+                doc.setFont('helvetica', 'normal');
+
+                let checkboxY = detailsY + 10;
+                let currentX = margin + 2;
+
+                polsterungOptions.forEach((option) => {
+                    const optionWidth = doc.getTextWidth(option) + 14;
+                    if (currentX + optionWidth > pageWidth - margin) {
+                        currentX = margin + 2;
+                        checkboxY += 8;
+                    }
+                    drawCheckbox(currentX, checkboxY, option, selectedPolsterung.has(option));
+                    currentX += optionWidth + 4;
+                });
+
+                detailsY = checkboxY + 6;
+            }
+
+            // Matching laces selection
+            const hasMatchingLaces = Number(order?.Passenden_schnursenkel_price) > 0;
+            doc.setFont('helvetica', 'bold');
+            doc.text('Desidera lacci abbinati alle scarpe?', margin + 2, detailsY + 2);
+            doc.setFont('helvetica', 'normal');
+            const lacesY = detailsY + 8;
+            let lacesX = margin + 2;
+            drawCheckbox(lacesX, lacesY, 'No, senza', !hasMatchingLaces);
+            lacesX += doc.getTextWidth('No, senza') + 20;
+            drawCheckbox(lacesX, lacesY, 'Sì, con lacci abbinati', hasMatchingLaces);
+            detailsY = lacesY + 8;
+
+            // Eyelet insertion selection
+            const hasEyelets = Number(order?.osen_einsetzen_price) > 0;
+            doc.setFont('helvetica', 'bold');
+            doc.text('Möchten Sie Ösen bereits eingesetzt haben?', margin + 2, detailsY + 2);
+            doc.setFont('helvetica', 'normal');
+            const eyeletY = detailsY + 8;
+            let eyeletX = margin + 2;
+            drawCheckbox(eyeletX, eyeletY, 'Nein, ohne Ösen', !hasEyelets);
+            eyeletX += doc.getTextWidth('Nein, ohne Ösen') + 20;
+            drawCheckbox(eyeletX, eyeletY, 'Ja, Ösen einsetzen', hasEyelets);
+            detailsY = eyeletY + 6;
+
             // Address block
             detailsY += 6;
             doc.setFont('helvetica', 'bold');
             doc.text('Indirizzo di consegna:', margin + 2, detailsY);
             doc.setFont('helvetica', 'normal');
             const address = [
-                'FeetF1rst GmbH',
+                'FeetF1rst VGmbH',
                 'Pipenstrasse 5, 39031 Brunico',
                 'Bolzano / Italia',
             ];
@@ -198,9 +282,9 @@ export default function InvoiceGenerator({ order }) {
             doc.setTextColor(255, 255, 255);
             doc.setFont('helvetica', 'normal');
             doc.setFontSize(10);
-            doc.text('Tel: 342 6412573', margin, footerY + 11);
+            doc.text('Tel: 366 508 7742', margin, footerY + 11);
             doc.text('info@feetf1rst.com', pageWidth / 2 - 15, footerY + 11);
-            doc.text('FeetF1rst GmbH', pageWidth - margin - 32, footerY + 11);
+            doc.text('FeetF1rst VGmbH', pageWidth - margin - 32, footerY + 11);
 
             const fileName = `Rechnung_${order?.orderNumber || order?.id}.pdf`;
             doc.save(fileName);
