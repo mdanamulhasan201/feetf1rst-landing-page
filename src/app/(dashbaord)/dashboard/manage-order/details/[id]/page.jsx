@@ -3,13 +3,13 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { getOrderById, statusChangeInOrder } from '../../../../../../apis/productsCreate';
 import { Button } from '../../../../../../components/ui/button';
-import { Badge } from '../../../../../../components/ui/badge';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../../../../../components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../../../../components/ui/select';
-import { ArrowLeft, ArrowRight } from 'lucide-react';
-import InvoiceGenerator from '../../../../../../components/dashboard/Invoice/InvoiceGenerator';
-import STLViewer from '../../../../../../components/dashboard/STLViewer';
 import toast from 'react-hot-toast';
+import OrderHeader from '../../../../../../components/dashboard/OrderDetails/OrderHeader';
+import OrderCustomizationCard from '../../../../../../components/dashboard/OrderDetails/OrderCustomizationCard';
+import OrderContactCard from '../../../../../../components/dashboard/OrderDetails/OrderContactCard';
+import OrderPriceSummaryCard from '../../../../../../components/dashboard/OrderDetails/OrderPriceSummaryCard';
+import OrderStatusCard from '../../../../../../components/dashboard/OrderDetails/OrderStatusCard';
+import { formatCurrencyValue, parseListField, getDisplayText } from '../../../../../../components/dashboard/OrderDetails/utils';
 
 export default function OrderDetails() {
     const params = useParams();
@@ -19,8 +19,7 @@ export default function OrderDetails() {
     const [order, setOrder] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [currentStatus, setCurrentStatus] = useState('neu');
-    const [productionNotes, setProductionNotes] = useState('');
+    const [currentStatus, setCurrentStatus] = useState('Neu');
 
     const [statusError, setStatusError] = useState(null);
     const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
@@ -55,8 +54,6 @@ export default function OrderDetails() {
             const response = await getOrderById(orderId);
             if (response && response.data) {
                 setOrder(response.data);
-                // Set initial production notes if available
-                setProductionNotes(response.data.productionNotes || '');
                 // Set initial status from order data
                 setCurrentStatus(response.data.status || 'Neu');
             } else {
@@ -115,31 +112,6 @@ export default function OrderDetails() {
         }
     };
 
-    const handleSaveNotes = async () => {
-        setIsSaving(true);
-        try {
-            // Here you would typically save to your API
-            console.log('Saving production notes:', productionNotes);
-            // Simulate API call
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            toast.success('Produktionsnotizen erfolgreich gespeichert!');
-        } catch (err) {
-            toast.error('Fehler beim Speichern der Notizen: ' + err.message);
-        } finally {
-            setIsSaving(false);
-        }
-    };
-
-    const formatDate = (dateString) => {
-        return new Date(dateString).toLocaleDateString('de-DE', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        });
-    };
-
     if (loading) {
         return (
             <div className="p-6">
@@ -177,258 +149,97 @@ export default function OrderDetails() {
     }
 
     const { customer, maßschaft_kollektion, partner, ...orderDetails } = order;
+    const polsterungItems = parseListField(orderDetails.polsterung);
+    const verstarkungItems = parseListField(orderDetails.vestarkungen || orderDetails.verstarkungen);
+    const addonPrices = [
+        { label: 'Ösen einsetzen', value: formatCurrencyValue(orderDetails.osen_einsetzen_price) },
+        { label: 'Passende Schnürsenkel', value: formatCurrencyValue(orderDetails.Passenden_schnursenkel_price) }
+    ];
+    const hasAddonSelection = addonPrices.some((item) => Boolean(item.value));
+    const basePrice = Number(maßschaft_kollektion?.price) || 0;
+    const osenPrice = Number(orderDetails.osen_einsetzen_price) || 0;
+    const lacePrice = Number(orderDetails.Passenden_schnursenkel_price) || 0;
+    const totalPrice = basePrice + osenPrice + lacePrice;
+    const resolvedCustomerName = customer ? [customer?.vorname, customer?.nachname].filter(Boolean).join(' ').trim() : '';
+    const fallbackCustomerName = customer?.customerNumber ? `Kunde #${customer.customerNumber}` : 'Unbekannter Kunde';
+    const customerFullName = resolvedCustomerName || orderDetails.other_customer_number || fallbackCustomerName;
+    const addressParts = [
+        customer?.straße,
+        customer?.plz,
+        customer?.ort,
+        customer?.land
+    ].filter(Boolean);
     const currentStatusInfo = statusWorkflow.find(status => status.key === currentStatus);
     const nextStatusInfo = getNextStatus();
 
+    const customizationData = {
+        lederType: getDisplayText(orderDetails.lederType),
+        lederfarbe: getDisplayText(orderDetails.lederfarbe),
+        innenfutter: getDisplayText(orderDetails.innenfutter),
+        schafthohe: getDisplayText(orderDetails.schafthohe),
+        nahtfarbe: getDisplayText(orderDetails.nahtfarbe, 'Standard'),
+        nahtfarbeText: orderDetails.nahtfarbe_text,
+        otherCustomerNumber: orderDetails.other_customer_number,
+        polsterungItems,
+        polsterungText: orderDetails.polsterung_text,
+        verstarkungItems,
+        verstarkungText: orderDetails.vestarkungen_text,
+        addonOptions: addonPrices,
+        models: {
+            first: order.image3d_1,
+            second: order.image3d_2
+        }
+    };
+
+    const contactInfo = {
+        customerName: customerFullName,
+        customerNumber: customer?.customerNumber,
+        email: customer?.email,
+        phone: customer?.telefon,
+        addressLines: addressParts,
+        partnerName: partner?.name,
+        partnerEmail: partner?.email
+    };
+
+    const collectionMeta = maßschaft_kollektion?.catagoary
+        ? `${maßschaft_kollektion.catagoary}${maßschaft_kollektion?.gender ? ` · ${maßschaft_kollektion.gender}` : ''}`
+        : maßschaft_kollektion?.gender || '';
+
+    const priceSummary = {
+        collectionName: maßschaft_kollektion?.name,
+        collectionMeta,
+        basePrice: formatCurrencyValue(basePrice),
+        addons: addonPrices,
+        totalPrice: formatCurrencyValue(totalPrice),
+        hasAddonSelection
+    };
+
+    const statusCardProps = {
+        currentStatus,
+        currentStatusInfo,
+        nextStatusInfo,
+        statusWorkflow,
+        statusError,
+        isUpdatingStatus,
+        onPrevious: handlePreviousStep,
+        onNext: handleNextStep,
+        onStatusChange: handleStatusChange,
+        hasPreviousStep: Boolean(getPreviousStatus())
+    };
+
     return (
         <div className="p-6 max-w-6xl mx-auto bg-white rounded-lg shadow-md">
-            {/* Header */}
-            <div className="mb-8">
-                <div>
-                    <div className="flex items-center justify-between gap-2 w-full">
-                        <Button
-                            variant="outline"
-                            onClick={() => router.back()}
-                            className="mb-4 cursor-pointer"
-                        >
-                            <ArrowLeft className="h-4 w-4 mr-2" />
-                            Zurück zur Übersicht
-                        </Button>
-                        {/* download invoice */}
-                        {order && (
-                            <InvoiceGenerator order={order} />
-                        )}
-                    </div>
-                    <h1 className="text-xl font-bold text-gray-800">
-                        Bestelldetails #{order?.orderNumber || order.id}
-                    </h1>
-                    <p className="text-gray-500 mt-2">
-                        Erstellt am {formatDate(order.createdAt)}
-                    </p>
-                </div>
-            </div>
+            <OrderHeader order={order} onBack={() => router.back()} />
 
             <div className="flex flex-col gap-4">
-                {/* Individualisierung */}
-                <div className="space-y-6">
-                    <Card className="shadow-none ">
-                        <CardHeader>
-                            <CardTitle className="text-xl font-semibold text-gray-800">
-                                Individualisierung
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-6">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                {/* Left Column */}
-                                <div className="space-y-4">
-                                    <div>
-                                        <label className="text-sm font-medium text-gray-600 block mb-2">
-                                            Leder bereitgestellt
-                                        </label>
-                                        <Badge className="bg-yellow-100 text-yellow-800 px-3 py-1">
-                                            Nein (+24,99 €)
-                                        </Badge>
-                                    </div>
+                <OrderCustomizationCard data={customizationData} />
 
-                                    <div>
-                                        <label className="text-sm font-medium text-gray-600 block mb-2">
-                                            Innenfutter
-                                        </label>
-                                        <p className="text-sm">{orderDetails.innenfutter || 'Leder'}</p>
-                                    </div>
-
-                                    <div>
-                                        <label className="text-sm font-medium text-gray-600 block mb-2">
-                                            Schafthöhe
-                                        </label>
-                                        <p className="text-sm">{orderDetails.schafthohe || '9cm'}</p>
-                                    </div>
-
-                                    <div>
-                                        <label className="text-sm font-medium text-gray-600 block mb-2">
-                                            Polsterung
-                                        </label>
-                                        <Badge variant="secondary" className="px-3 py-1">
-                                            {orderDetails.polsterung || 'Standard'}
-                                        </Badge>
-                                    </div>
-
-                                    <div>
-                                        <label className="text-sm font-medium text-gray-600 block mb-2">
-                                            Verstärkungen
-                                        </label>
-                                        <div className="space-y-2">
-                                            <Badge variant="secondary" className="px-3 py-1 mr-2">
-                                                Fersenverstärkung
-                                            </Badge>
-                                            <Badge variant="secondary" className="px-3 py-1">
-                                                Innen-Außenknöchel
-                                            </Badge>
-                                            <p className="text-xs text-gray-500 mt-2">
-                                                Fersen- und Knöchelverstärkung für Wanderungen
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Right Column */}
-                                <div className="space-y-4">
-                                    <div>
-                                        <label className="text-sm font-medium text-gray-600 block mb-2">
-                                            Lederfarbe
-                                        </label>
-                                        <p className="text-sm">{orderDetails.lederfarbe || 'Tan'}</p>
-                                    </div>
-
-                                    <div>
-                                        <label className="text-sm font-medium text-gray-600 block mb-2">
-                                            Nahtfarbe
-                                        </label>
-                                        <p className="text-sm">{orderDetails.nahtfarbe || 'Beige'}</p>
-                                    </div>
-
-                                    <div>
-                                        <label className="text-sm font-medium text-gray-600 block mb-2">
-                                            Schaftform
-                                        </label>
-                                        <p className="text-sm">Eher steif</p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* 3D Models Section */}
-                            {(order.image3d_1 || order.image3d_2) && (
-                                <div className="mt-6 pt-6 border-t border-gray-200">
-                                    <h3 className="text-lg font-semibold text-gray-800 mb-4">
-                                        3D-Modelle
-                                    </h3>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        {order.image3d_1 && (
-                                            <STLViewer 
-                                                stlUrl={order.image3d_1} 
-                                                label="3D-Modell 1" 
-                                            />
-                                        )}
-                                        {order.image3d_2 && (
-                                            <STLViewer 
-                                                stlUrl={order.image3d_2} 
-                                                label="3D-Modell 2" 
-                                            />
-                                        )}
-                                    </div>
-                                </div>
-                            )}
-                        </CardContent>
-                    </Card>
-
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    <OrderContactCard contactInfo={contactInfo} />
+                    <OrderPriceSummaryCard summary={priceSummary} />
                 </div>
 
-                {/*Bestellverwaltung */}
-                <div className="space-y-6">
-                    <Card className="shadow-none ">
-                        <CardHeader>
-                            <CardTitle className="text-xl font-semibold text-gray-800">
-                                Bestellverwaltung
-                            </CardTitle>
-                            <CardDescription>
-                                Status-Workflow
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-6">
-                            {/* Status Workflow */}
-                            <div>
-                                <div className="flex items-center gap-3 mb-4">
-                                    <Button
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={handlePreviousStep}
-                                        disabled={!getPreviousStatus() || isUpdatingStatus}
-                                        className="flex items-center gap-2 cursor-pointer"
-                                    >
-                                        <ArrowLeft className="h-4 w-4" />
-                                        Zurück
-                                    </Button>
-
-                                    <Badge className="bg-blue-600 text-white px-4 py-2">
-                                        {currentStatusInfo?.label}
-                                    </Badge>
-
-                                    <Button
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={handleNextStep}
-                                        disabled={!nextStatusInfo || isUpdatingStatus}
-                                        className="flex items-center gap-2 cursor-pointer"
-                                    >
-                                        Nächste Stufe
-                                        <ArrowRight className="h-4 w-4" />
-                                    </Button>
-                                </div>
-
-                                {/* Status Error Display */}
-                                {statusError && (
-                                    <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
-                                        <p className="text-red-800 text-sm">
-                                            <strong>Fehler:</strong> {statusError}
-                                        </p>
-                                    </div>
-                                )}
-
-                                {/* Manual Status Selection */}
-                                <div className="space-y-3">
-                                    <label className="text-sm font-medium text-gray-600">
-                                        Oder Status manuell wählen:
-                                    </label>
-                                    <Select value={currentStatus} onValueChange={handleStatusChange} disabled={isUpdatingStatus}>
-                                        <SelectTrigger className="w-full">
-                                            <SelectValue />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {statusWorkflow.map((status) => (
-                                                <SelectItem key={status.key} value={status.key}>
-                                                    {status.label}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-
-                                {/* Next Step Info */}
-                                {nextStatusInfo && (
-                                    <div className="bg-blue-50 p-3 rounded-lg mt-5">
-                                        <p className="text-sm text-blue-800">
-                                            <strong>Nächster Schritt:</strong> {nextStatusInfo.label}
-                                        </p>
-                                    </div>
-                                )}
-                            </div>
-
-                            {/* Production Notes */}
-                            {/* <div>
-                                <label className="text-sm font-medium text-gray-600 block mb-2">
-                                    Produktionsnotizen
-                                </label>
-                                <Textarea
-                                    value={productionNotes}
-                                    onChange={(e) => setProductionNotes(e.target.value)}
-                                    placeholder="Fügen Sie hier interne Notizen zur Produktion hinzu..."
-                                    className="min-h-[120px] resize-y"
-                                />
-                                <div className="flex justify-end mt-3">
-                                    <Button
-                                        onClick={handleSaveNotes}
-                                        disabled={isSaving}
-                                        className="flex items-center gap-2 cursor-pointer"
-                                    >
-                                        <Save className="h-4 w-4" />
-                                        {isSaving ? 'Speichern...' : 'Status speichern'}
-                                    </Button>
-                                </div>
-                            </div> */}
-                        </CardContent>
-                    </Card>
-
-                </div>
+                <OrderStatusCard {...statusCardProps} />
             </div>
         </div>
     );

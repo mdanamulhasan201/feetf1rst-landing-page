@@ -84,3 +84,14 @@ export const statusChangeInOrder = async (id, status) => {
         throw new Error(error.response?.data?.message || error.message || 'Something went wrong');
     }
 }
+
+
+// delete single order
+export const deleteSingleOrder = async (id) => {
+    try {
+        const response = await axiosClient.delete(`/custom_shafts/delete/${id}`);
+        return response.data;
+    } catch (error) {
+        throw new Error(error.response?.data?.message || error.message || 'Something went wrong');
+    }
+}
