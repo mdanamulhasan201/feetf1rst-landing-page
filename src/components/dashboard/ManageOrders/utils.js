@@ -24,16 +24,15 @@ export const formatDateTime = (value) => {
 };
 
 const statusConfig = {
-    'Neu': { className: 'bg-blue-100 text-blue-800', label: 'Neu' },
-    'Zu_Produzent_abgeschickt': { className: 'bg-yellow-100 text-yellow-800', label: 'Zu Produzent abgeschickt' },
-    'In_Bearbeitung': { className: 'bg-orange-100 text-orange-800', label: 'In Bearbeitung' },
-    'Zu_Kunde_abgeschickt': { className: 'bg-purple-100 text-purple-800', label: 'Zu Kunde abgeschickt' },
-    'Bei_uns_angekommen': { className: 'bg-green-100 text-green-800', label: 'Bei uns angekommen' },
-    'Beim_Kunden_angekommen': { className: 'bg-emerald-100 text-emerald-800', label: 'Beim Kunden angekommen' }
+    'Bestellung_eingegangen': { className: 'bg-blue-100 text-blue-800', label: 'Bestellung eingegangen' },
+    'In_Produktion': { className: 'bg-yellow-100 text-yellow-800', label: 'In Produktion' },
+    'Qualitätskontrolle': { className: 'bg-orange-100 text-orange-800', label: 'Qualitätskontrolle' },
+    'Versandt': { className: 'bg-purple-100 text-purple-800', label: 'Versandt' },
+    'Ausgeführt': { className: 'bg-green-100 text-green-800', label: 'Ausgeführt' }
 };
 
-export const getStatusBadge = (status = 'Neu') => {
-    const config = statusConfig[status] || statusConfig['Neu'];
+export const getStatusBadge = (status = 'Bestellung_eingegangen') => {
+    const config = statusConfig[status] || statusConfig['Bestellung_eingegangen'];
     return <Badge className={config.className}>{config.label}</Badge>;
 };
 

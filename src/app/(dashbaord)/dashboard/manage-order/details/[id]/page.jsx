@@ -19,19 +19,18 @@ export default function OrderDetails() {
     const [order, setOrder] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [currentStatus, setCurrentStatus] = useState('Neu');
+    const [currentStatus, setCurrentStatus] = useState('Bestellung_eingegangen');
 
     const [statusError, setStatusError] = useState(null);
     const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
 
     // Status workflow configuration - using valid statuses from API
     const statusWorkflow = [
-        { key: 'Neu', label: 'Neu' },
-        { key: 'Zu_Produzent_abgeschickt', label: 'Zu Produzent abgeschickt' },
-        { key: 'In_Bearbeitung', label: 'In Bearbeitung' },
-        { key: 'Zu_Kunde_abgeschickt', label: 'Zu Kunde abgeschickt' },
-        { key: 'Bei_uns_angekommen', label: 'Bei uns angekommen' },
-        { key: 'Beim_Kunden_angekommen', label: 'Beim Kunden angekommen' }
+        { key: 'Bestellung_eingegangen', label: 'Bestellung eingegangen' },
+        { key: 'In_Produktion', label: 'In Produktion' },
+        { key: 'Qualitätskontrolle', label: 'Qualitätskontrolle' },
+        { key: 'Versandt', label: 'Versandt' },
+        { key: 'Ausgeführt', label: 'Ausgeführt' }
     ];
 
     const getCurrentStatusIndex = () => {
@@ -55,7 +54,7 @@ export default function OrderDetails() {
             if (response && response.data) {
                 setOrder(response.data);
                 // Set initial status from order data
-                setCurrentStatus(response.data.status || 'Neu');
+                setCurrentStatus(response.data.status || 'Bestellung_eingegangen');
             } else {
                 setError('Order not found');
             }

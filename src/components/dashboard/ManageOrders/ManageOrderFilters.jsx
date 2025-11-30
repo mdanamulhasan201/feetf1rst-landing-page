@@ -52,12 +52,11 @@ const ManageOrderFilters = ({
                     </SelectTrigger>
                     <SelectContent>
                         <SelectItem value="all">Alle Status</SelectItem>
-                        <SelectItem value="Neu">Neu</SelectItem>
-                        <SelectItem value="Zu_Produzent_abgeschickt">Zu Produzent abgeschickt</SelectItem>
-                        <SelectItem value="In_Bearbeitung">In Bearbeitung</SelectItem>
-                        <SelectItem value="Zu_Kunde_abgeschickt">Zu Kunde abgeschickt</SelectItem>
-                        <SelectItem value="Bei_uns_angekommen">Bei uns angekommen</SelectItem>
-                        <SelectItem value="Beim_Kunden_angekommen">Beim Kunden angekommen</SelectItem>
+                        <SelectItem value="Bestellung_eingegangen">Bestellung eingegangen</SelectItem>
+                        <SelectItem value="In_Produktion">In Produktion</SelectItem>
+                        <SelectItem value="Qualitätskontrolle">Qualitätskontrolle</SelectItem>
+                        <SelectItem value="Versandt">Versandt</SelectItem>
+                        <SelectItem value="Ausgeführt">Ausgeführt</SelectItem>
                     </SelectContent>
                 </Select>
             </div>
