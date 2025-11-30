@@ -81,8 +81,8 @@ export default function InvoiceGenerator({ order }) {
             const productImgUrl = order?.maßschaft_kollektion?.image;
             const { dataUrl: productImgData, width: natW, height: natH } = await fetchImageInfo(productImgUrl);
             doc.setDrawColor(200);
-            const boxW = 65; // enlarged box
-            const boxH = 65;
+            const boxW = 85; // bigger image box
+            const boxH = 85;
             const boxX = margin + 2;
             const boxY = y;
             doc.roundedRect(boxX, boxY, boxW, boxH, 4, 4);
@@ -105,8 +105,10 @@ export default function InvoiceGenerator({ order }) {
             doc.setFontSize(12);
             // doc.text(`${order?.maßschaft_kollektion?.ide || ''}`, margin + 2, y + boxH + 7);
 
-            // Right column: customer name and model (centered with image)
-            const rightX = margin + 2 + boxW + 12;
+            // Right column: customer name and model (positioned on right side, within margins)
+            // Calculate right position ensuring it stays within page bounds
+            const rightSectionStart = pageWidth - margin - 2 - 80; // Leave 80mm for text content
+            const rightX = Math.max(rightSectionStart, boxX + boxW + 8); // At least 8mm gap from image
             const centerY = y + boxH / 2;
 
             // Helper function to draw dashed lines
@@ -151,8 +153,9 @@ export default function InvoiceGenerator({ order }) {
                 doc.text(modelName, modelloDashStartX + 2, centerY + 8);
             }
 
-            // Details list with dashed lines
-            y += 80;
+            // Details list with dashed lines - add padding after image box
+            const imageBottomPadding = 12; // mm gap between image and details
+            y = boxY + boxH + imageBottomPadding;
             doc.setTextColor(30, 30, 30);
             doc.setFont('helvetica', 'normal');
             doc.setFontSize(11);
@@ -174,18 +177,18 @@ export default function InvoiceGenerator({ order }) {
 
             let detailsY = y;
             detailFields.forEach((field) => {
-                // Draw label and data together
-                const fullText = `${field.label} ${field.value}`;
-                doc.text(fullText, margin + 2, detailsY);
-
-                // Calculate where the colon ends to start dashed line from there
-                const labelText = `${field.label} `;
-                const labelWidth = doc.getTextWidth(labelText);
-                const dashStartX = margin + 2 + labelWidth;
-
-                // Draw dashed line starting from after the colon
-                drawDashedLine(dashStartX, detailsY + 3, pageWidth - margin, detailsY + 3);
-                detailsY += 8;
+                // Draw label in bold
+                doc.setFont('helvetica', 'bold');
+                doc.text(field.label, margin + 2, detailsY);
+                
+                // Draw value in normal text below the label
+                if (field.value) {
+                    doc.setFont('helvetica', 'normal');
+                    doc.text(field.value, margin + 2, detailsY + 5);
+                    detailsY += 10; // More space for two lines
+                } else {
+                    detailsY += 6;
+                }
             });
 
             // Polsterung checkboxes (if provided)
@@ -252,19 +255,23 @@ export default function InvoiceGenerator({ order }) {
             // Eyelet insertion selection
             const hasEyelets = Number(order?.osen_einsetzen_price) > 0;
             doc.setFont('helvetica', 'bold');
-            doc.text('Möchten Sie Ösen bereits eingesetzt haben?', margin + 2, detailsY + 2);
+            doc.text('Desidera che le asole siano già inserite?', margin + 2, detailsY + 2);
             doc.setFont('helvetica', 'normal');
             const eyeletY = detailsY + 8;
             let eyeletX = margin + 2;
-            drawCheckbox(eyeletX, eyeletY, 'Nein, ohne Ösen', !hasEyelets);
-            eyeletX += doc.getTextWidth('Nein, ohne Ösen') + 20;
-            drawCheckbox(eyeletX, eyeletY, 'Ja, Ösen einsetzen', hasEyelets);
+            drawCheckbox(eyeletX, eyeletY, 'No, senza asole', !hasEyelets);
+            eyeletX += doc.getTextWidth('No, senza asole') + 20;
+            drawCheckbox(eyeletX, eyeletY, 'Sì, inserire asole', hasEyelets);
             detailsY = eyeletY + 6;
 
-            // Address block
-            detailsY += 6;
+            // Address block - positioned closer to footer with more top spacing
+            const addressTopPadding = 20; // mm space before address block
+            const footerY = 280;
+            const addressStartY = footerY - 25; // Position address block 25mm above footer
+            detailsY = addressStartY - addressTopPadding; // Add padding before address
+            
             doc.setFont('helvetica', 'bold');
-            doc.text('Indirizzo di consegna:', margin + 2, detailsY);
+            doc.text('Indirizzo di consegna:', margin + 2, addressStartY);
             doc.setFont('helvetica', 'normal');
             const address = [
                 'FeetF1rst VGmbH',
@@ -272,11 +279,10 @@ export default function InvoiceGenerator({ order }) {
                 'Bolzano / Italia',
             ];
             address.forEach((line, idx) => {
-                doc.text(line, margin + 2, detailsY + 6 + idx * 6);
+                doc.text(line, margin + 2, addressStartY + 6 + idx * 6);
             });
 
             // Footer bar
-            const footerY = 280;
             doc.setFillColor(98, 160, 123);
             doc.rect(0, footerY, pageWidth, 17, 'F');
             doc.setTextColor(255, 255, 255);
