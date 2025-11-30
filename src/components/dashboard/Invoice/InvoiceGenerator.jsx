@@ -268,7 +268,7 @@ export default function InvoiceGenerator({ order }) {
             const addressTopPadding = 20; // mm space before address block
             const footerY = 280;
             const addressStartY = footerY - 25; // Position address block 25mm above footer
-            detailsY = addressStartY - addressTopPadding; // Add padding before address
+            detailsY = addressStartY - addressTopPadding; 
             
             doc.setFont('helvetica', 'bold');
             doc.text('Indirizzo di consegna:', margin + 2, addressStartY);
