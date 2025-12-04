@@ -10,7 +10,7 @@ const nextConfig = {
       },
       {
         protocol: 'https',
-        hostname: 'bennett-kodak-cabinets-atlanta.trycloudflare.com',
+        hostname: 'problems-automotive-wishes-six.trycloudflare.com',
       },
 
     ],
