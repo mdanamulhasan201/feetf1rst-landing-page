@@ -10,7 +10,7 @@ const nextConfig = {
       },
       {
         protocol: 'https',
-        hostname: 'problems-automotive-wishes-six.trycloudflare.com',
+        hostname: 'film-example-lite-opposition.trycloudflare.com',
       },
 
     ],

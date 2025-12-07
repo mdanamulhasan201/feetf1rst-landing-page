@@ -6,6 +6,7 @@ import { toast } from 'react-hot-toast'
 import { Eye, EyeOff } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import AddPartner from '../../../../components/dashboard/AddPartner/AddPartner'
+import Image from 'next/image'
 
 export default function Settings() {
     const { user, updateUser } = useAuth()
@@ -253,12 +254,14 @@ export default function Settings() {
                                     Profile Picture
                                 </label>
                                 <div className="relative w-32 h-32 mx-auto">
-                                    <div className="w-full h-full rounded-full ring-4 ring-gray-100 overflow-hidden shadow-lg">
+                                    <div className="w-full h-full rounded-full p-2 border">
                                         {profileImage ? (
-                                            <img
+                                            <Image
+                                                width={400}
+                                                height={400}
                                                 src={typeof profileImage === 'string' ? profileImage : URL.createObjectURL(profileImage)}
                                                 alt="Profile preview"
-                                                className="w-full h-full object-cover"
+                                                className="w-full h-full p-3"
                                             />
                                         ) : (
                                             <div className="w-full h-full bg-gray-200 flex items-center justify-center">

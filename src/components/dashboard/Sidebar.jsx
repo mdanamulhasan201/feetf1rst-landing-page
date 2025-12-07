@@ -3,7 +3,7 @@ import React from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { IoClose } from 'react-icons/io5'
-import { HiPencilAlt, HiCollection, HiCog, HiArrowRightOnRectangle } from 'react-icons/hi'
+import { HiPencilAlt, HiCollection, HiCog, HiArrowRightOnRectangle, HiDocumentText } from 'react-icons/hi'
 import { useAuth } from '../../context/AuthContext'
 import { Image, Upload, UserPlus } from 'lucide-react'
 import { MdProductionQuantityLimits } from "react-icons/md";
@@ -20,6 +20,7 @@ export default function Sidebar({ onClose }) {
         { icon: UserPlus, label: 'Manage Partner', href: '/dashboard/manage-partner' },
         { icon: MdProductionQuantityLimits, label: 'Upload Product', href: '/dashboard/upload-product' },
         { icon: MdProductionQuantityLimits , label: 'Manage Order', href: '/dashboard/manage-order' },
+        { icon: HiDocumentText , label: 'Bestellubersicht', href: '/dashboard/bestellubersicht' },
         { icon: HiCog, label: 'Settings', href: '/dashboard/settings' },
     ];
 

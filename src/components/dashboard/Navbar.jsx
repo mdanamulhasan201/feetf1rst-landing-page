@@ -23,14 +23,14 @@ export default function Navbar({ onMenuClick }) {
 
         <div className="flex items-center">
           {user && (
-            <div className="relative h-12 w-12 rounded-full ">
+            <div className="relative h-12 w-12 rounded-full p-1 border">
               {user.image ? (
                 <Image
                   src={user.image}
                   alt={user?.name || 'User avatar'}
                   width={100}
                   height={100}
-                  className="rounded-full object-cover h-full w-full"
+                  className="rounded-full  h-full w-full "
                 />
               ) : (
                 <div className="h-full w-full rounded-full bg-gray-200 flex items-center justify-center text-gray-600 font-semibold">
