@@ -10,11 +10,26 @@ const nextConfig = {
       },
       {
         protocol: 'https',
-        hostname: 'belt-silent-indicator-origin.trycloudflare.com',
+        hostname: 'colours-venture-boutique-enrolled.trycloudflare.com',
       },
+      // {
+      //   protocol: 'https',
+      //   hostname: 'belt-silent-indicator-origin.trycloudflare.com',
+      // },
 
     ],
   },
 }
 
 export default nextConfig
+
+
+// {
+//   "message": "Invalid status",
+//   "validStatuses": [
+//       "In_bearbeitung",
+//       "Versendet",
+//       "Geliefert",
+//       "Storniert"
+//   ]
+// }
