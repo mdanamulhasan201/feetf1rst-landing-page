@@ -98,32 +98,32 @@ const getActionButtons = (
             const isConfirming = updatingActions.has(`${orderId}:Versendet`);
             const isCanceling = updatingActions.has(`${orderId}:Storniert`);
             return (
-                <div className="flex gap-2 flex-wrap">
+                <div className="flex flex-col gap-1.5 items-center">
                     <Button
                         size="sm"
                         variant="outline"
-                        className="bg-gray-100 hover:bg-gray-200 text-gray-700 border-gray-200"
+                        className="bg-gray-100 cursor-pointer hover:bg-gray-200 text-gray-700 border-gray-200 w-full"
                         onClick={() => onStatusUpdate(orderId, 'Versendet', currentStatus)}
                         disabled={isConfirming || isCanceling}
                     >
                         {isConfirming ? (
-                            <Loader2 className="h-4 w-4 animate-spin text-gray-700" />
+                            <Loader2 className="h-4 w-4 animate-spin text-gray-700 mr-1.5" />
                         ) : (
-                            <Check className="h-4 w-4 text-gray-700" />
+                            <Check className="h-4 w-4 text-gray-700 mr-1.5" />
                         )}
                         Bestätigen
                     </Button>
                     <Button
                         size="sm"
                         variant="outline"
-                        className="bg-red-100 hover:bg-red-200 text-red-600 border-red-200"
+                        className="bg-red-100 cursor-pointer hover:bg-red-200 text-red-600 border-red-200 w-full"
                         onClick={() => onStatusUpdate(orderId, 'Storniert', currentStatus)}
                         disabled={isConfirming || isCanceling}
                     >
                         {isCanceling ? (
-                            <Loader2 className="h-4 w-4 animate-spin text-red-600" />
+                            <Loader2 className="h-4 w-4 animate-spin text-red-600 mr-1.5" />
                         ) : (
-                            <X className="h-4 w-4 text-red-600" />
+                            <X className="h-4 w-4 text-red-600 mr-1.5" />
                         )}
                         Stornieren
                     </Button>
@@ -133,32 +133,32 @@ const getActionButtons = (
             const isMarkingDelivered = updatingActions.has(`${orderId}:Geliefert`);
             const isGoingBackFromSent = updatingActions.has(`${orderId}:In_bearbeitung`);
             return (
-                <div className="flex gap-2 flex-wrap">
+                <div className="flex flex-col gap-1.5 items-center">
                     <Button
                         size="sm"
                         variant="outline"
-                        className="bg-blue-100 hover:bg-blue-200 text-blue-600 border-blue-200"
+                        className="bg-blue-100 cursor-pointer hover:bg-blue-200 text-blue-600 border-blue-200 w-full"
                         onClick={() => onStatusUpdate(orderId, 'Geliefert', currentStatus)}
                         disabled={isMarkingDelivered || isGoingBackFromSent}
                     >
                         {isMarkingDelivered ? (
-                            <Loader2 className="h-4 w-4 animate-spin text-blue-600" />
+                            <Loader2 className="h-4 w-4 animate-spin text-blue-600 mr-1.5" />
                         ) : (
-                            <Package className="h-4 w-4 text-blue-600" />
+                            <Package className="h-4 w-4 text-blue-600 mr-1.5" />
                         )}
                         Als geliefert markieren
                     </Button>
                     <Button
                         size="sm"
                         variant="outline"
-                        className="bg-gray-100 hover:bg-gray-200 text-gray-700 border-gray-200"
+                        className="bg-gray-100 cursor-pointer hover:bg-gray-200 text-gray-700 border-gray-200 w-full"
                         onClick={() => onStatusUpdate(orderId, 'In_bearbeitung', currentStatus)}
                         disabled={isMarkingDelivered || isGoingBackFromSent}
                     >
                         {isGoingBackFromSent ? (
-                            <Loader2 className="h-4 w-4 animate-spin text-gray-700" />
+                            <Loader2 className="h-4 w-4 animate-spin text-gray-700 mr-1.5" />
                         ) : (
-                            <ArrowLeft className="h-4 w-4 text-gray-700" />
+                            <ArrowLeft className="h-4 w-4 text-gray-700 mr-1.5" />
                         )}
                         Zurück
                     </Button>
@@ -170,14 +170,14 @@ const getActionButtons = (
                 <Button
                     size="sm"
                     variant="outline"
-                    className="bg-gray-100 hover:bg-gray-200 text-gray-700 border-gray-200"
+                    className="bg-gray-100 cursor-pointer hover:bg-gray-200 text-gray-700 border-gray-200 w-full"
                     onClick={() => onStatusUpdate(orderId, 'In_bearbeitung', currentStatus)}
                     disabled={isGoingBackFromCanceled}
                 >
                     {isGoingBackFromCanceled ? (
-                        <Loader2 className="h-4 w-4 animate-spin text-gray-700" />
+                        <Loader2 className="h-4 w-4 animate-spin text-gray-700 mr-1.5" />
                     ) : (
-                        <ArrowLeft className="h-4 w-4 text-gray-700" />
+                        <ArrowLeft className="h-4 w-4 text-gray-700 mr-1.5" />
                     )}
                     Zurück
                 </Button>
@@ -317,7 +317,7 @@ export default function Bestellubersicht() {
             )}
 
             {/* Table */}
-            <div className="bg-white rounded-lg border border-gray-200 overflow-hidden w-full">
+            <div className="bg-white rounded-lg border border-gray-200 overflow-hidden w-full -mx-6">
                 {loading ? (
                     <div className="flex items-center justify-center py-12">
                         <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
@@ -325,16 +325,25 @@ export default function Bestellubersicht() {
                     </div>
                 ) : (
                     <>
-                        <Table className="w-full">
+                        <Table className="w-full table-fixed border-collapse" style={{ tableLayout: 'fixed', width: '100%', borderSpacing: 0 }}>
+                            <colgroup>
+                                <col style={{ width: '14.28%' }} />
+                                <col style={{ width: '14.28%' }} />
+                                <col style={{ width: '14.28%' }} />
+                                <col style={{ width: '14.28%' }} />
+                                <col style={{ width: '14.28%' }} />
+                                <col style={{ width: '14.28%' }} />
+                                <col style={{ width: '14.32%' }} />
+                            </colgroup>
                             <TableHeader className="w-full">
                                 <TableRow className="bg-gray-50 w-full">
-                                    <TableHead className="font-semibold text-gray-700 min-w-[150px]">Bestelldatum</TableHead>
-                                    <TableHead className="font-semibold text-gray-700 min-w-[180px]">Partnername</TableHead>
-                                    <TableHead className="font-semibold text-gray-700 min-w-[100px]">Größe</TableHead>
-                                    <TableHead className="font-semibold text-gray-700 min-w-[100px]">Länge</TableHead>
-                                    <TableHead className="font-semibold text-gray-700 min-w-[100px]">Menge</TableHead>
-                                    <TableHead className="font-semibold text-gray-700 min-w-[120px]">Status</TableHead>
-                                    <TableHead className="font-semibold text-gray-700 min-w-[200px]">Aktionen</TableHead>
+                                    <TableHead className="font-semibold text-gray-700 px-2 py-3">Bestelldatum</TableHead>
+                                    <TableHead className="font-semibold text-gray-700 px-2 py-3">Partnername</TableHead>
+                                    <TableHead className="font-semibold text-gray-700 px-2 py-3 text-center">Größe</TableHead>
+                                    <TableHead className="font-semibold text-gray-700 px-2 py-3 text-center">Länge</TableHead>
+                                    <TableHead className="font-semibold text-gray-700 px-2 py-3 text-center">Menge</TableHead>
+                                    <TableHead className="font-semibold text-gray-700 px-2 py-3 text-center">Status</TableHead>
+                                    <TableHead className="font-semibold text-gray-700 px-2 py-3 text-center">Aktionen</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody className="">
@@ -355,33 +364,35 @@ export default function Bestellubersicht() {
                                         // Debug: uncomment to check partner data
                                         // console.log('Order partner:', order.partner, 'Partner name:', partnerName);
 
-                                        return (
-                                            <TableRow key={order.id} className="hover:bg-gray-50 w-full">
-                                                <TableCell className="text-sm text-gray-600 min-w-[150px]">
-                                                    {formatDate(order.createdAt)}
-                                                </TableCell>
-                                                <TableCell className="text-gray-700 min-w-[180px]">
-                                                    {partnerName}
-                                                </TableCell>
-                                                <TableCell className="min-w-[100px]">
-                                                    <Badge variant="secondary" className="bg-gray-100 text-gray-700 rounded-full px-3 py-1">
-                                                        {order.size}
-                                                    </Badge>
-                                                </TableCell>
-                                                <TableCell className="text-gray-700 min-w-[100px]">
-                                                    {order.length} mm
-                                                </TableCell>
-                                                <TableCell className="text-gray-700 min-w-[100px]">
-                                                    {order.quantity} Stück
-                                                </TableCell>
-                                                <TableCell className="min-w-[120px]">
-                                                    {getStatusBadge(statusInfo.display, statusInfo.type)}
-                                                </TableCell>
-                                                <TableCell className="min-w-[200px]">
-                                                    {getActionButtons(statusInfo.type, order.id, order.status, openConfirmModal, updatingActions)}
-                                                </TableCell>
-                                            </TableRow>
-                                        );
+                                         return (
+                                             <TableRow key={order.id} className="hover:bg-gray-50 w-full">
+                                                 <TableCell className="text-sm text-gray-600 px-2 py-3">
+                                                     {formatDate(order.createdAt)}
+                                                 </TableCell>
+                                                 <TableCell className="text-gray-700 px-2 py-3">
+                                                     <span className="truncate block max-w-full" title={partnerName}>
+                                                         {partnerName}
+                                                     </span>
+                                                 </TableCell>
+                                                 <TableCell className="px-2 py-3 text-center">
+                                                     <Badge variant="secondary" className="bg-gray-100 text-gray-700 rounded-full px-3 py-1 inline-block">
+                                                         {order.size}
+                                                     </Badge>
+                                                 </TableCell>
+                                                 <TableCell className="text-gray-700 px-2 py-3 text-center">
+                                                     {order.length} mm
+                                                 </TableCell>
+                                                 <TableCell className="text-gray-700 px-2 py-3 text-center">
+                                                     {order.quantity} Stück
+                                                 </TableCell>
+                                                 <TableCell className="px-2 py-3 text-center">
+                                                     {getStatusBadge(statusInfo.display, statusInfo.type)}
+                                                 </TableCell>
+                                                 <TableCell className="px-2 py-3">
+                                                     {getActionButtons(statusInfo.type, order.id, order.status, openConfirmModal, updatingActions)}
+                                                 </TableCell>
+                                             </TableRow>
+                                         );
                                     })
                                 )}
                             </TableBody>
