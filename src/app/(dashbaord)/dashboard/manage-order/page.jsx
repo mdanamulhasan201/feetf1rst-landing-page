@@ -160,19 +160,6 @@ export default function ManageOrder() {
         }
     };
 
-    if (loading) {
-        return (
-            <div className="p-6">
-                <div className="flex items-center justify-center h-64">
-                    <div className="text-center">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
-                        <p className="mt-2 text-gray-600">Loading orders...</p>
-                    </div>
-                </div>
-            </div>
-        );
-    }
-
     if (error) {
         return (
             <div className="p-6 h- flex items-center justify-center">
@@ -207,6 +194,8 @@ export default function ManageOrder() {
 
                 <OrdersTable
                     orders={orders}
+                    loading={loading}
+                    pagination={pagination}
                     onViewDetails={handleViewDetails}
                     onCancel={openCancelModal}
                     cancellingOrderId={cancellingOrderId}

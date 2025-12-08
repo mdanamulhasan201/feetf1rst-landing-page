@@ -1,14 +1,6 @@
 "use client"
 
 import React, { useState } from 'react'
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from '../../../../components/ui/table'
 import { Badge } from '../../../../components/ui/badge'
 import { Button } from '../../../../components/ui/button'
 import { Input } from '../../../../components/ui/input'
@@ -22,7 +14,7 @@ import {
 } from '../../../../components/ui/dialog'
 import { Check, X, Package, Search, Loader2, ArrowLeft } from 'lucide-react'
 import { useOrders } from '../../../../hooks/useOrders'
-import TablePagination from '../../../../components/shared/TablePagination'
+import ReusableTable from '../../../../components/shared/ReusableTable'
 import { updateOrderStatus } from '../../../../apis/bestellubersichtApis'
 import toast from 'react-hot-toast'
 
@@ -317,104 +309,78 @@ export default function Bestellubersicht() {
             )}
 
             {/* Table */}
-            <div className="bg-white rounded-lg border border-gray-200 overflow-hidden w-full -mx-6">
-                {loading ? (
-                    <div className="flex items-center justify-center py-12">
-                        <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
-                        <span className="ml-2 text-gray-600">Laden...</span>
-                    </div>
-                ) : (
-                    <>
-                        <Table className="w-full table-fixed border-collapse" style={{ tableLayout: 'fixed', width: '100%', borderSpacing: 0 }}>
-                            <colgroup>
-                                <col style={{ width: '14.28%' }} />
-                                <col style={{ width: '14.28%' }} />
-                                <col style={{ width: '14.28%' }} />
-                                <col style={{ width: '14.28%' }} />
-                                <col style={{ width: '14.28%' }} />
-                                <col style={{ width: '14.28%' }} />
-                                <col style={{ width: '14.32%' }} />
-                            </colgroup>
-                            <TableHeader className="w-full">
-                                <TableRow className="bg-gray-50 w-full">
-                                    <TableHead className="font-semibold text-gray-700 px-2 py-3">Bestelldatum</TableHead>
-                                    <TableHead className="font-semibold text-gray-700 px-2 py-3">Partnername</TableHead>
-                                    <TableHead className="font-semibold text-gray-700 px-2 py-3 text-center">Größe</TableHead>
-                                    <TableHead className="font-semibold text-gray-700 px-2 py-3 text-center">Länge</TableHead>
-                                    <TableHead className="font-semibold text-gray-700 px-2 py-3 text-center">Menge</TableHead>
-                                    <TableHead className="font-semibold text-gray-700 px-2 py-3 text-center">Status</TableHead>
-                                    <TableHead className="font-semibold text-gray-700 px-2 py-3 text-center">Aktionen</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody className="">
-                                {orders.length === 0 ? (
-                                    <TableRow className="">
-                                        <TableCell colSpan={7} className="text-center py-8 text-gray-500">
-                                            Keine Bestellungen gefunden
-                                        </TableCell>
-                                    </TableRow>
-                                ) : (
-                                    orders.map((order) => {
-                                        const statusInfo = mapStatus(order.status);
-                                        // Get partner name - prioritize name field, then busnessName
-                                        const partnerName = order.partner
-                                            ? (order.partner.name || order.partner.busnessName || 'N/A')
-                                            : 'N/A';
-
-                                        // Debug: uncomment to check partner data
-                                        // console.log('Order partner:', order.partner, 'Partner name:', partnerName);
-
-                                         return (
-                                             <TableRow key={order.id} className="hover:bg-gray-50 w-full">
-                                                 <TableCell className="text-sm text-gray-600 px-2 py-3">
-                                                     {formatDate(order.createdAt)}
-                                                 </TableCell>
-                                                 <TableCell className="text-gray-700 px-2 py-3">
-                                                     <span className="truncate block max-w-full" title={partnerName}>
-                                                         {partnerName}
-                                                     </span>
-                                                 </TableCell>
-                                                 <TableCell className="px-2 py-3 text-center">
-                                                     <Badge variant="secondary" className="bg-gray-100 text-gray-700 rounded-full px-3 py-1 inline-block">
-                                                         {order.size}
-                                                     </Badge>
-                                                 </TableCell>
-                                                 <TableCell className="text-gray-700 px-2 py-3 text-center">
-                                                     {order.length} mm
-                                                 </TableCell>
-                                                 <TableCell className="text-gray-700 px-2 py-3 text-center">
-                                                     {order.quantity} Stück
-                                                 </TableCell>
-                                                 <TableCell className="px-2 py-3 text-center">
-                                                     {getStatusBadge(statusInfo.display, statusInfo.type)}
-                                                 </TableCell>
-                                                 <TableCell className="px-2 py-3">
-                                                     {getActionButtons(statusInfo.type, order.id, order.status, openConfirmModal, updatingActions)}
-                                                 </TableCell>
-                                             </TableRow>
-                                         );
-                                    })
-                                )}
-                            </TableBody>
-                        </Table>
-
-                        {/* Pagination */}
-                        {pagination.totalPages > 0 && (
-                            <TablePagination
-                                currentPage={pagination.currentPage}
-                                totalPages={pagination.totalPages}
-                                total={pagination.totalItems}
-                                itemsPerPage={pagination.itemsPerPage}
-                                startIndex={(pagination.currentPage - 1) * pagination.itemsPerPage}
-                                loading={loading}
-                                onPageChange={goToPage}
-                                itemLabel="Einträgen"
-                                showItemCount={true}
-                            />
-                        )}
-                    </>
-                )}
-            </div>
+            <ReusableTable
+                    columns={[
+                        {
+                            header: 'Bestelldatum',
+                            accessor: (order) => formatDate(order.createdAt),
+                            width: '14.28%',
+                            cellClassName: 'text-sm text-gray-600'
+                        },
+                        {
+                            header: 'Partnername',
+                            accessor: (order) => {
+                                const partnerName = order.partner
+                                    ? (order.partner.name || order.partner.busnessName || 'N/A')
+                                    : 'N/A';
+                                return (
+                                    <span className="truncate block max-w-full" title={partnerName}>
+                                        {partnerName}
+                                    </span>
+                                );
+                            },
+                            width: '14.28%'
+                        },
+                        {
+                            header: 'Größe',
+                            accessor: (order) => (
+                                <Badge variant="secondary" className="bg-gray-100 text-gray-700 rounded-full px-3 py-1 inline-block">
+                                    {order.size}
+                                </Badge>
+                            ),
+                            width: '14.28%',
+                            align: 'center'
+                        },
+                        {
+                            header: 'Länge',
+                            accessor: (order) => `${order.length} mm`,
+                            width: '14.28%',
+                            align: 'center'
+                        },
+                        {
+                            header: 'Menge',
+                            accessor: (order) => `${order.quantity} Stück`,
+                            width: '14.28%',
+                            align: 'center'
+                        },
+                        {
+                            header: 'Status',
+                            accessor: (order) => {
+                                const statusInfo = mapStatus(order.status);
+                                return getStatusBadge(statusInfo.display, statusInfo.type);
+                            },
+                            width: '14.28%',
+                            align: 'center'
+                        },
+                        {
+                            header: 'Aktionen',
+                            accessor: (order) => {
+                                const statusInfo = mapStatus(order.status);
+                                return getActionButtons(statusInfo.type, order.id, order.status, openConfirmModal, updatingActions);
+                            },
+                            width: '14.32%'
+                        }
+                    ]}
+                    data={orders}
+                    loading={loading}
+                    emptyMessage="Keine Bestellungen gefunden"
+                    pagination={pagination}
+                    onPageChange={goToPage}
+                    itemLabel="Einträgen"
+                    showPagination={true}
+                    tableClassName=""
+                    containerClassName=""
+                />
 
             {/* Status Update Confirmation Modal */}
             <Dialog open={confirmModalOpen} onOpenChange={setConfirmModalOpen}>

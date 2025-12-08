@@ -107,6 +107,19 @@ html {
   }
 }
 
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.animate-shimmer {
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
 .best-match-label {
   animation: pulse-label 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }

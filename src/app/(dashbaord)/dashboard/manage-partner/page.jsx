@@ -2,14 +2,7 @@
 import React, { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { format } from 'date-fns'
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from "../../../../components/ui/table"
+import ReusableTable from "../../../../components/shared/ReusableTable"
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -34,10 +27,6 @@ import {
     MoreVertical,
     Edit,
     Trash2,
-    ChevronLeft,
-    ChevronRight,
-    ChevronsLeft,
-    ChevronsRight,
     Plus
 } from "lucide-react"
 import Image from 'next/image'
@@ -144,33 +133,6 @@ export default function ManagePartnerPage() {
         updateURL(debouncedSearchTerm, newPage)
     }
 
-    const getPageNumbers = () => {
-        const pageNumbers = []
-        const maxVisiblePages = 5
-        const { currentPage, totalPages } = pagination
-        if (totalPages <= maxVisiblePages) {
-            for (let i = 1; i <= totalPages; i++) {
-                pageNumbers.push(i)
-            }
-            return pageNumbers
-        }
-        pageNumbers.push(1)
-        let start = Math.max(2, currentPage - 1)
-        let end = Math.min(totalPages - 1, currentPage + 1)
-        if (currentPage <= 2) {
-            end = 4
-        } else if (currentPage >= totalPages - 1) {
-            start = totalPages - 3
-        }
-        if (start > 2) pageNumbers.push('...')
-        for (let i = start; i <= end; i++) {
-            pageNumbers.push(i)
-        }
-        if (end < totalPages - 1) pageNumbers.push('...')
-        if (totalPages > 1) pageNumbers.push(totalPages)
-        return pageNumbers
-    }
-
     const openDeleteModal = (partner) => {
         setPartnerToDelete(partner)
         setDeleteModalOpen(true)
@@ -239,7 +201,7 @@ export default function ManagePartnerPage() {
     }
 
     return (
-        <div className="max-w-7xl mx-auto">
+        <div className="p-6 w-full">
             <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-5">
                 <div>
                     <h1 className="text-2xl font-bold text-gray-800">Manage Partners</h1>
@@ -255,212 +217,150 @@ export default function ManagePartnerPage() {
                 </Button>
             </div>
 
-            <div className="bg-white rounded-lg shadow-sm overflow-hidden border border-gray-100">
-                <div className="p-6 border-b border-gray-100">
-                    <div className="relative flex-1 max-w-md">
-                        <div className="flex items-center">
-                            <Search className="absolute left-3 text-gray-400 h-4 w-4" />
-                            <Input
-                                placeholder="Search by name or email..."
-                                value={searchTerm}
-                                onChange={(e) => handleSearchInputChange(e.target.value)}
-                                className="pl-10 bg-gray-50 border-gray-200"
-                            />
-                            {searchTerm && (
-                                <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={handleClearSearch}
-                                    className="ml-2"
-                                >
-                                    Clear
-                                </Button>
-                            )}
-                        </div>
-                        {/* Show searching indicator */}
-                        {searchTerm !== debouncedSearchTerm && (
-                            <div className="absolute top-full left-0 mt-1 text-xs text-gray-400 flex items-center gap-1">
-                                <div className="w-3 h-3 border border-gray-300 border-t-transparent rounded-full animate-spin" />
-                                Searching...
-                            </div>
+            {/* Search Bar */}
+            <div className="mb-4">
+                <div className="relative max-w-md">
+                    <div className="flex items-center">
+                        <Search className="absolute left-3 text-gray-400 h-4 w-4" />
+                        <Input
+                            placeholder="Search by name or email..."
+                            value={searchTerm}
+                            onChange={(e) => handleSearchInputChange(e.target.value)}
+                            className="pl-10"
+                        />
+                        {searchTerm && (
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={handleClearSearch}
+                                className="ml-2"
+                            >
+                                Clear
+                            </Button>
                         )}
                     </div>
-                </div>
-
-                <div className="overflow-x-auto">
-                    <Table>
-                        <TableHeader>
-                            <TableRow className="bg-gray-50 hover:bg-gray-50">
-                                <TableHead className="w-[80px] text-center">Index</TableHead>
-                                <TableHead className="w-[200px]">Name</TableHead>
-                                <TableHead className="w-[200px]">Email</TableHead>
-                                <TableHead className="w-[120px] text-center">Image</TableHead>
-                                <TableHead className="w-[120px] text-center">Role</TableHead>
-                                <TableHead className="w-[150px] text-center">Created At</TableHead>
-                                <TableHead className="w-[100px] text-center">Actions</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {loading ? (
-                                <TableRow>
-                                    <TableCell colSpan={7}>
-                                        <div className="flex items-center justify-center py-20">
-                                            <div className="flex flex-col items-center gap-2">
-                                                <div className="w-10 h-10 border-4 border-green-600 border-t-transparent rounded-full animate-spin" />
-                                                <span className="text-gray-500 text-sm">Loading partners...</span>
-                                            </div>
-                                        </div>
-                                    </TableCell>
-                                </TableRow>
-                            ) : partners.length === 0 ? (
-                                <TableRow>
-                                    <TableCell colSpan={7} className="text-center py-10 text-gray-500">
-                                        No partners found.
-                                    </TableCell>
-                                </TableRow>
-                            ) : (
-                                partners.map((partner, index) => (
-                                    <TableRow key={partner.id} className="hover:bg-gray-50">
-                                        <TableCell className="font-medium text-center">
-                                            {startIndex + index + 1}
-                                        </TableCell>
-                                        <TableCell>
-                                            {partner?.name || 'Null'}
-                                        </TableCell>
-                                        <TableCell>
-                                            {partner?.email}
-                                        </TableCell>
-                                        <TableCell className="text-center">
-                                            {partner?.image ? (
-                                                <div className="relative w-14 h-14 mx-auto">
-                                                    <Image
-                                                        src={partner?.image}
-                                                        width={100}
-                                                        height={100}
-                                                        alt={partner?.name}
-                                                        className="w-full h-full rounded-md object-cover border border-gray-200"
-                                                    />
-                                                </div>
-                                            ) : (
-                                                <div className="h-10 w-10 rounded-md bg-gray-100 flex items-center justify-center mx-auto">
-                                                    <span className="text-gray-400 text-xs">No image</span>
-                                                </div>
-                                            )}
-                                        </TableCell>
-                                        <TableCell className="text-center">
-                                            <Badge className="font-normal bg-blue-100 text-blue-800">
-                                                {partner?.role}
-                                            </Badge>
-                                        </TableCell>
-                                        <TableCell className="text-center text-gray-500">
-                                            {format(new Date(partner?.createdAt), 'MMM d, yyyy')}
-                                        </TableCell>
-                                        <TableCell className="text-center">
-                                            <DropdownMenu>
-                                                <DropdownMenuTrigger asChild>
-                                                    <Button variant="ghost" className="cursor-pointer h-8 w-8 p-0">
-                                                        <span className="sr-only">Open menu</span>
-                                                        <MoreVertical className="h-4 w-4" />
-                                                    </Button>
-                                                </DropdownMenuTrigger>
-                                                <DropdownMenuContent align="end" className="w-[160px]">
-                                                    <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                                    <DropdownMenuSeparator />
-                                                    <DropdownMenuItem
-                                                        className="cursor-pointer"
-                                                        onClick={() => {
-                                                            setSelectedPartnerId(partner.id);
-                                                            setAddPartnerOpen(true);
-                                                        }}
-                                                    >
-                                                        <Edit className="mr-2 h-4 w-4" />
-                                                        <span>Update</span>
-                                                    </DropdownMenuItem>
-                                                    <DropdownMenuItem
-                                                        className="cursor-pointer text-red-600"
-                                                        onClick={() => openDeleteModal(partner)}
-                                                    >
-                                                        <Trash2 className="mr-2 h-4 w-4" />
-                                                        <span>Delete</span>
-                                                    </DropdownMenuItem>
-                                                </DropdownMenuContent>
-                                            </DropdownMenu>
-                                        </TableCell>
-                                    </TableRow>
-                                ))
-                            )}
-                        </TableBody>
-                    </Table>
-                </div>
-            </div>
-
-            <div className="flex items-center justify-between px-6 py-4 border-t border-gray-100">
-                <div className="text-sm text-gray-500 bg-gray-50 px-3 py-1 rounded-md">
-                    {!loading && partners.length > 0 && (
-                        <>
-                            Showing {startIndex + 1}-
-                            {Math.min(pagination.currentPage * itemsPerPage, pagination.total)} of {pagination.total} partners
-                        </>
+                    {/* Show searching indicator */}
+                    {searchTerm !== debouncedSearchTerm && (
+                        <div className="absolute top-full left-0 mt-1 text-xs text-gray-400 flex items-center gap-1">
+                            <div className="w-3 h-3 border border-gray-300 border-t-transparent rounded-full animate-spin" />
+                            Searching...
+                        </div>
                     )}
                 </div>
-                <div className="flex items-center space-x-2">
-                    <Button
-                        variant="outline"
-                        size="icon"
-                        className="h-8 w-8"
-                        onClick={() => changePage(1)}
-                        disabled={!pagination.hasPreviousPage || loading}
-                    >
-                        <ChevronsLeft className="h-4 w-4" />
-                    </Button>
-                    <Button
-                        variant="outline"
-                        size="icon"
-                        className="h-8 w-8"
-                        onClick={() => changePage(pagination.currentPage - 1)}
-                        disabled={!pagination.hasPreviousPage || loading}
-                    >
-                        <ChevronLeft className="h-4 w-4" />
-                    </Button>
-                    {getPageNumbers().map((page, index) => (
-                        page === '...' ? (
-                            <span key={`ellipsis-${index}`} className="px-2">...</span>
-                        ) : (
-                            <Button
-                                key={`page-${page}`}
-                                variant={pagination.currentPage === page ? "default" : "outline"}
-                                size="icon"
-                                className={`h-8 w-8 ${pagination.currentPage === page ? 'bg-green-600 hover:bg-green-700' : ''}`}
-                                onClick={() => changePage(page)}
-                                disabled={loading}
-                            >
-                                {page}
-                            </Button>
-                        )
-                    ))}
-                    <Button
-                        variant="outline"
-                        size="icon"
-                        className="h-8 w-8"
-                        onClick={() => changePage(pagination.currentPage + 1)}
-                        disabled={!pagination.hasNextPage || loading}
-                    >
-                        <ChevronRight className="h-4 w-4" />
-                    </Button>
-                    <Button
-                        variant="outline"
-                        size="icon"
-                        className="h-8 w-8"
-                        onClick={() => changePage(pagination.totalPages)}
-                        disabled={!pagination.hasNextPage || loading}
-                    >
-                        <ChevronsRight className="h-4 w-4" />
-                    </Button>
-                    <div className="text-sm text-gray-500 bg-gray-50 px-3 py-1 rounded-md ml-2">
-                        Page {pagination.currentPage} of {pagination.totalPages}
-                    </div>
-                </div>
             </div>
+
+            {/* Table */}
+            <ReusableTable
+                    columns={[
+                        {
+                            header: 'Index',
+                            accessor: (partner, index) => {
+                                const idx = (startIndex || 0) + (index || 0) + 1;
+                                return isNaN(idx) ? '' : idx;
+                            },
+                            width: '10%',
+                            align: 'center',
+                            cellClassName: 'font-medium'
+                        },
+                        {
+                            header: 'Name',
+                            accessor: (partner) => partner?.name || 'Null',
+                            width: '20%'
+                        },
+                        {
+                            header: 'Email',
+                            accessor: 'email',
+                            width: '20%'
+                        },
+                        {
+                            header: 'Image',
+                            accessor: (partner) => partner?.image ? (
+                                <div className="relative w-14 h-14 mx-auto">
+                                    <Image
+                                        src={partner?.image}
+                                        width={100}
+                                        height={100}
+                                        alt={partner?.name}
+                                        className="w-full h-full rounded-md object-cover border border-gray-200"
+                                    />
+                                </div>
+                            ) : (
+                                <div className="h-10 w-10 rounded-md bg-gray-100 flex items-center justify-center mx-auto">
+                                    <span className="text-gray-400 text-xs">No image</span>
+                                </div>
+                            ),
+                            width: '15%',
+                            align: 'center'
+                        },
+                        {
+                            header: 'Role',
+                            accessor: (partner) => (
+                                <Badge className="font-normal bg-blue-100 text-blue-800">
+                                    {partner?.role}
+                                </Badge>
+                            ),
+                            width: '12%',
+                            align: 'center'
+                        },
+                        {
+                            header: 'Created At',
+                            accessor: (partner) => format(new Date(partner?.createdAt), 'MMM d, yyyy'),
+                            width: '15%',
+                            align: 'center',
+                            cellClassName: 'text-gray-500'
+                        },
+                        {
+                            header: 'Actions',
+                            accessor: (partner) => (
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button variant="ghost" className="cursor-pointer h-8 w-8 p-0">
+                                            <span className="sr-only">Open menu</span>
+                                            <MoreVertical className="h-4 w-4" />
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end" className="w-[160px]">
+                                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                        <DropdownMenuSeparator />
+                                        <DropdownMenuItem
+                                            className="cursor-pointer"
+                                            onClick={() => {
+                                                setSelectedPartnerId(partner.id);
+                                                setAddPartnerOpen(true);
+                                            }}
+                                        >
+                                            <Edit className="mr-2 h-4 w-4" />
+                                            <span>Update</span>
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem
+                                            className="cursor-pointer text-red-600"
+                                            onClick={() => openDeleteModal(partner)}
+                                        >
+                                            <Trash2 className="mr-2 h-4 w-4" />
+                                            <span>Delete</span>
+                                        </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                            ),
+                            width: '8%',
+                            align: 'center'
+                        }
+                    ]}
+                    data={partners}
+                    loading={loading}
+                    emptyMessage="No partners found."
+                    pagination={{
+                        currentPage: pagination.currentPage,
+                        totalPages: pagination.totalPages,
+                        totalItems: pagination.total,
+                        itemsPerPage: itemsPerPage
+                    }}
+                    onPageChange={changePage}
+                    itemLabel="partners"
+                    showPagination={true}
+                    tableClassName=""
+                    containerClassName=""
+                />
 
             {/* Delete confirmation modal */}
             <Dialog open={deleteModalOpen} onOpenChange={setDeleteModalOpen}>
