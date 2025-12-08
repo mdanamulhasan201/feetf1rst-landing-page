@@ -12,10 +12,10 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'colours-venture-boutique-enrolled.trycloudflare.com',
       },
-      // {
-      //   protocol: 'https',
-      //   hostname: 'belt-silent-indicator-origin.trycloudflare.com',
-      // },
+      {
+        protocol: 'https',
+        hostname: 'counting-enjoyed-daughters-airports.trycloudflare.com',
+      },
 
     ],
   },
