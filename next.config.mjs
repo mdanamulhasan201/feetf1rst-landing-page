@@ -14,7 +14,7 @@ const nextConfig = {
       },
       {
         protocol: 'https',
-        hostname: 'counting-enjoyed-daughters-airports.trycloudflare.com',
+        hostname: 'quotations-pierce-patrol-sur.trycloudflare.com',
       },
 
     ],

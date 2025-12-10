@@ -101,28 +101,27 @@ const OrdersTable = ({
                 {
                     header: 'Aktionen',
                     accessor: (order) => (
-                        <div className="flex flex-col gap-1.5 items-center">
+                        <div className="flex flex-col gap-1.5 items-center justify-center">
                             <Button
                                 size="sm"
                                 className="bg-[#00A63E] cursor-pointer hover:bg-[#00A63E]/40 text-white w-full"
                                 onClick={() => onViewDetails(order)}
                             >
-                                <Eye className="h-4 w-4 mr-1.5" />
+                                <Eye className="h-4 w-4 " />
                                 Details
                             </Button>
-                            <Button
-                                size="sm"
-                                variant="outline"
-                                className="border-red-200 cursor-pointer text-red-600 hover:bg-red-50 w-full"
+                            <button
+                                className="border-red-200 border text-center flex items-center justify-center gap-2 p-1 rounded-md cursor-pointer text-red-600 hover:bg-red-50 w-full"
                                 disabled={cancellingOrderId === order.id}
                                 onClick={() => onCancel(order)}
                             >
-                                <XCircle className="h-4 w-4 mr-1.5" />
+                                <XCircle className="w-4 h-4" />
                                 {cancellingOrderId === order.id ? 'Abbrechen...' : 'Abbrechen'}
-                            </Button>
+
+                            </button>
                         </div>
                     ),
-                    width: '7%'
+                    width: '8%'
                 }
             ]}
             data={orders}
