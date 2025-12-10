@@ -390,7 +390,7 @@ export default function Bestellubersicht() {
                         <DialogDescription className="">
                             {pendingUpdate && (
                                 <>
-                                    Möchten Sie den Status wirklich von <strong>"{mapStatus(pendingUpdate.currentStatus).display}"</strong> auf <strong>"{mapStatus(pendingUpdate.newStatus).display}"</strong> ändern?
+                                    Möchten Sie den Status wirklich von <strong>&quot;{mapStatus(pendingUpdate.currentStatus).display}&quot;</strong> auf <strong>&quot;{mapStatus(pendingUpdate.newStatus).display}&quot;</strong> ändern?
                                     {pendingUpdate.newStatus === 'Geliefert' && (
                                         <span className="block mt-2 text-amber-600 font-medium">
                                             Hinweis: Dieser Status kann nicht rückgängig gemacht werden.
