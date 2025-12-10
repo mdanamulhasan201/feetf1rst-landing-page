@@ -9,6 +9,7 @@ import OrderCustomizationCard from '../../../../../../components/dashboard/Order
 import OrderContactCard from '../../../../../../components/dashboard/OrderDetails/OrderContactCard';
 import OrderPriceSummaryCard from '../../../../../../components/dashboard/OrderDetails/OrderPriceSummaryCard';
 import OrderStatusCard from '../../../../../../components/dashboard/OrderDetails/OrderStatusCard';
+import OrderDetailsSkeleton from '../../../../../../components/dashboard/OrderDetails/OrderDetailsSkeleton';
 import { formatCurrencyValue, parseListField, getDisplayText } from '../../../../../../components/dashboard/OrderDetails/utils';
 
 export default function OrderDetails() {
@@ -112,16 +113,7 @@ export default function OrderDetails() {
     };
 
     if (loading) {
-        return (
-            <div className="p-6">
-                <div className="flex items-center justify-center h-64">
-                    <div className="text-center">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
-                        <p className="mt-2 text-gray-600">Loading order details...</p>
-                    </div>
-                </div>
-            </div>
-        );
+        return <OrderDetailsSkeleton />;
     }
 
     if (error) {
