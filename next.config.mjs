@@ -14,7 +14,7 @@ const nextConfig = {
       },
       {
         protocol: 'https',
-        hostname: 'quotations-pierce-patrol-sur.trycloudflare.com',
+        hostname: 'rim-kiss-utilization-src.trycloudflare.com',
       },
 
     ],

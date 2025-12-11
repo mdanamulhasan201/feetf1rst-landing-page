@@ -537,7 +537,7 @@ export const getCharacteristics = async () => {
 // Get all categories
 export const getAllCategories = async () => {
     try {
-        const response = await axiosClient.get('/questions');
+        const response = await axiosClient.get('/questions/admin');
         if (response?.data && response?.data?.level === "category") {
             return {
                 success: true,
@@ -553,7 +553,7 @@ export const getAllCategories = async () => {
 // Get subcategories by category slug
 export const getSubCategories = async (categorySlug) => {
     try {
-        const response = await axiosClient.get(`/questions/${categorySlug}`);
+        const response = await axiosClient.get(`/questions/admin/${categorySlug}`);
         if (response.data) {
             if (!response?.data?.data || response?.data?.level !== "sub-categories") {
                 return {
