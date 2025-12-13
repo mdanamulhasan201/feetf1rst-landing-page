@@ -14,7 +14,7 @@ const nextConfig = {
       },
       {
         protocol: 'https',
-        hostname: 'rim-kiss-utilization-src.trycloudflare.com',
+        hostname: 'download-rhode-ceremony-feet.trycloudflare.com',
       },
 
     ],
