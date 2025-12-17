@@ -35,6 +35,25 @@ import toast from 'react-hot-toast'
 // import AddPartner from '@/components/dashboard/AddPartner/AddPartner'
 import AddPartner from '../../../../components/dashboard/AddPartner/AddPartner'
 
+// Normalize partner image URL so Next/Image always gets a valid src
+const getPartnerImageUrl = (image) => {
+    if (!image || typeof image !== 'string') return null
+
+    // If it's already absolute or a root-relative path, use as-is
+    if (
+        image.startsWith('http://') ||
+        image.startsWith('https://') ||
+        image.startsWith('/')
+    ) {
+        return image
+    }
+
+    // Backend currently returns something like:
+    // "fragrances-passenger-fish-head.trycloudflare.com/uploads/....jpg"
+    // Next/Image requires a full URL, so prepend protocol
+    return `https://${image}`
+}
+
 export default function ManagePartnerPage() {
     const router = useRouter()
     const searchParams = useSearchParams()
@@ -251,116 +270,124 @@ export default function ManagePartnerPage() {
 
             {/* Table */}
             <ReusableTable
-                    columns={[
-                        {
-                            header: 'Index',
-                            accessor: (partner, index) => {
-                                const idx = (startIndex || 0) + (index || 0) + 1;
-                                return isNaN(idx) ? '' : idx;
-                            },
-                            width: '10%',
-                            align: 'center',
-                            cellClassName: 'font-medium'
+                columns={[
+                    {
+                        header: 'Index',
+                        accessor: (partner, index) => {
+                            const idx = (startIndex || 0) + (index || 0) + 1;
+                            return isNaN(idx) ? '' : idx;
                         },
-                        {
-                            header: 'Name',
-                            accessor: (partner) => partner?.name || 'Null',
-                            width: '20%'
-                        },
-                        {
-                            header: 'Email',
-                            accessor: 'email',
-                            width: '20%'
-                        },
-                        {
-                            header: 'Image',
-                            accessor: (partner) => partner?.image ? (
+                        width: '10%',
+                        align: 'center',
+                        cellClassName: 'font-medium'
+                    },
+                    {
+                        header: 'Name',
+                        accessor: (partner) => partner?.name || 'Null',
+                        width: '20%'
+                    },
+                    {
+                        header: 'Email',
+                        accessor: 'email',
+                        width: '20%'
+                    },
+                    {
+                        header: 'Image',
+                        accessor: (partner) => {
+                            const imgSrc = getPartnerImageUrl(partner?.image)
+
+                            if (!imgSrc) {
+                                return (
+                                    <div className="h-10 w-10 rounded-md bg-gray-100 flex items-center justify-center mx-auto">
+                                        <span className="text-gray-400 text-xs">No image</span>
+                                    </div>
+                                )
+                            }
+
+                            return (
                                 <div className="relative w-14 h-14 mx-auto">
                                     <Image
-                                        src={partner?.image}
+                                        src={imgSrc}
                                         width={100}
                                         height={100}
-                                        alt={partner?.name}
+                                        alt={partner?.name || 'Partner image'}
                                         className="w-full h-full rounded-md object-cover border border-gray-200"
                                     />
                                 </div>
-                            ) : (
-                                <div className="h-10 w-10 rounded-md bg-gray-100 flex items-center justify-center mx-auto">
-                                    <span className="text-gray-400 text-xs">No image</span>
-                                </div>
-                            ),
-                            width: '15%',
-                            align: 'center'
+                            )
                         },
-                        {
-                            header: 'Role',
-                            accessor: (partner) => (
-                                <Badge className="font-normal bg-blue-100 text-blue-800">
-                                    {partner?.role}
-                                </Badge>
-                            ),
-                            width: '12%',
-                            align: 'center'
-                        },
-                        {
-                            header: 'Created At',
-                            accessor: (partner) => format(new Date(partner?.createdAt), 'MMM d, yyyy'),
-                            width: '15%',
-                            align: 'center',
-                            cellClassName: 'text-gray-500'
-                        },
-                        {
-                            header: 'Actions',
-                            accessor: (partner) => (
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                        <Button variant="ghost" className="cursor-pointer h-8 w-8 p-0">
-                                            <span className="sr-only">Open menu</span>
-                                            <MoreVertical className="h-4 w-4" />
-                                        </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="end" className="w-[160px]">
-                                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                        <DropdownMenuSeparator />
-                                        <DropdownMenuItem
-                                            className="cursor-pointer"
-                                            onClick={() => {
-                                                setSelectedPartnerId(partner.id);
-                                                setAddPartnerOpen(true);
-                                            }}
-                                        >
-                                            <Edit className="mr-2 h-4 w-4" />
-                                            <span>Update</span>
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem
-                                            className="cursor-pointer text-red-600"
-                                            onClick={() => openDeleteModal(partner)}
-                                        >
-                                            <Trash2 className="mr-2 h-4 w-4" />
-                                            <span>Delete</span>
-                                        </DropdownMenuItem>
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
-                            ),
-                            width: '8%',
-                            align: 'center'
-                        }
-                    ]}
-                    data={partners}
-                    loading={loading}
-                    emptyMessage="No partners found."
-                    pagination={{
-                        currentPage: pagination.currentPage,
-                        totalPages: pagination.totalPages,
-                        totalItems: pagination.total,
-                        itemsPerPage: itemsPerPage
-                    }}
-                    onPageChange={changePage}
-                    itemLabel="partners"
-                    showPagination={true}
-                    tableClassName=""
-                    containerClassName=""
-                />
+                        width: '15%',
+                        align: 'center'
+                    },
+                    {
+                        header: 'Role',
+                        accessor: (partner) => (
+                            <Badge className="font-normal bg-blue-100 text-blue-800">
+                                {partner?.role}
+                            </Badge>
+                        ),
+                        width: '12%',
+                        align: 'center'
+                    },
+                    {
+                        header: 'Created At',
+                        accessor: (partner) => format(new Date(partner?.createdAt), 'MMM d, yyyy'),
+                        width: '15%',
+                        align: 'center',
+                        cellClassName: 'text-gray-500'
+                    },
+                    {
+                        header: 'Actions',
+                        accessor: (partner) => (
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" className="cursor-pointer h-8 w-8 p-0">
+                                        <span className="sr-only">Open menu</span>
+                                        <MoreVertical className="h-4 w-4" />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" className="w-[160px]">
+                                    <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem
+                                        className="cursor-pointer"
+                                        onClick={() => {
+                                            setSelectedPartnerId(partner.id);
+                                            setAddPartnerOpen(true);
+                                        }}
+                                    >
+                                        <Edit className="mr-2 h-4 w-4" />
+                                        <span>Update</span>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem
+                                        className="cursor-pointer text-red-600"
+                                        onClick={() => openDeleteModal(partner)}
+                                    >
+                                        <Trash2 className="mr-2 h-4 w-4" />
+                                        <span>Delete</span>
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        ),
+                        width: '8%',
+                        align: 'center'
+                    }
+                ]}
+                data={partners}
+                loading={loading}
+                emptyMessage="No partners found."
+                pagination={{
+                    currentPage: pagination.currentPage,
+                    totalPages: pagination.totalPages,
+                    totalItems: pagination.total,
+                    itemsPerPage: itemsPerPage
+                }}
+                onPageChange={changePage}
+                itemLabel="partners"
+                showPagination={true}
+                tableClassName=""
+                containerClassName=""
+            />
 
             {/* Delete confirmation modal */}
             <Dialog open={deleteModalOpen} onOpenChange={setDeleteModalOpen}>

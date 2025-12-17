@@ -79,7 +79,9 @@ export default function AdditionalInformation({
                     <div className="flex items-center gap-2">
                       <div className="w-12 h-12 rounded-full">
                         <Image
-                          src={item.image}
+                          src={item.image && (item.image.startsWith('http://') || item.image.startsWith('https://') || item.image.startsWith('/'))
+                            ? item.image 
+                            : item.image ? `https://${item.image}` : '/placeholder.png'}
                           alt={item.text}
                           width={100}
                           height={100}

@@ -16,6 +16,10 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'download-rhode-ceremony-feet.trycloudflare.com',
       },
+      {
+        protocol: 'https',
+        hostname: 'fragrances-passenger-fish-head.trycloudflare.com',
+      },
 
     ],
   },

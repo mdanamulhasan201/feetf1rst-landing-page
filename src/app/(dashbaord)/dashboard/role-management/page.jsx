@@ -11,12 +11,14 @@ import CreateRoleModal from '../../../../components/dashboard/RoleManagement/Cre
 import AssignUserModal from '../../../../components/dashboard/RoleManagement/AssignUserModal'
 import ConfirmModal from '../../../../components/shared/ConfirmModal'
 import { menuItems, mockUsers, getInitialRoles } from '../../../../components/dashboard/RoleManagement/constants'
+import { getAllPartners } from '../../../../apis/authApis'
+import { getAllPermissions, postAllPermissions } from '../../../../apis/roleManagementApis'
 
 export default function RoleManagement() {
   const [roles, setRoles] = useState(() => getInitialRoles(menuItems))
-  const [selectedRole, setSelectedRole] = useState(roles[0] || null)
+  const [selectedRole, setSelectedRole] = useState(null)
   const [searchQuery, setSearchQuery] = useState('')
-  const [permissions, setPermissions] = useState(selectedRole?.permissions || [])
+  const [permissions, setPermissions] = useState([])
   const [allUsers, setAllUsers] = useState(mockUsers)
   const [assignUserModalOpen, setAssignUserModalOpen] = useState(false)
   const [userSearchQuery, setUserSearchQuery] = useState('')
@@ -26,6 +28,49 @@ export default function RoleManagement() {
   const [userSpecificPermissions, setUserSpecificPermissions] = useState([])
   const [userPermissionSearch, setUserPermissionSearch] = useState('')
   const [confirmModalOpen, setConfirmModalOpen] = useState(false)
+  const [isTogglingPermission, setIsTogglingPermission] = useState(false)
+
+  // Load all partners once and use them as "users" for Mitarbeiter role
+  useEffect(() => {
+    const fetchPartnersForRoleManagement = async () => {
+      try {
+        const response = await getAllPartners({ page: 1, limit: 1000, search: '' })
+        const partnersData = response?.data || []
+
+        // Normalize partners to user-like objects (id, name, email, etc.)
+        const partnerUsers = partnersData.map((partner) => ({
+          id: partner.id,
+          name: partner.name,
+          email: partner.email,
+          roleId: partner.roleId || null,
+          customPermissions: [],
+        }))
+
+        setAllUsers((prev) => {
+          // Prefer API partners; fall back to previous users if API empty
+          return partnerUsers.length > 0 ? partnerUsers : prev
+        })
+
+        // Clear default Mitarbeiter assignments so they can be managed via API-based users
+        setRoles((prevRoles) =>
+          prevRoles.map((role) => {
+            if (role.id === 'mitarbeiter') {
+              return {
+                ...role,
+                userIds: role.userIds && role.userIds.length > 0 ? role.userIds : [],
+                userCount: role.userIds && role.userIds.length > 0 ? role.userIds.length : 0,
+              }
+            }
+            return role
+          })
+        )
+      } catch (error) {
+        console.error('Failed to load partners for role management:', error)
+      }
+    }
+
+    fetchPartnersForRoleManagement()
+  }, [])
 
   // Update permissions when selected role changes
   useEffect(() => {
@@ -35,18 +80,99 @@ export default function RoleManagement() {
     setSelectedUserFromRole(null)
   }, [selectedRole])
 
-  // Update user-specific permissions when selected user changes
+  // Helper function to load permissions from API
+  const loadUserPermissionsFromAPI = async (userId) => {
+    if (!selectedRole || selectedRole.id !== 'mitarbeiter') return null
+
+    try {
+      const response = await getAllPermissions(userId)
+      
+      // Handle different response structures
+      // Response could be: { success: true, data: {...} } or just the data object
+      const apiData = response?.data || response
+
+      if (!apiData) {
+        console.warn('No data received from getAllPermissions API')
+        return []
+      }
+
+      // Two possible shapes:
+      // 1) Object with boolean flags per key (dashboard, teamchat, ...)
+      // 2) Array of { title, action, path, nested: [] }
+
+      let effectivePermissions = []
+
+      if (Array.isArray(apiData)) {
+        // Array with title/action
+        effectivePermissions = menuItems
+          .filter((item) =>
+            apiData.some(
+              (entry) =>
+                entry.title === item.label && entry.action === true
+            )
+          )
+          .map((item) => item.id)
+      } else if (typeof apiData === 'object' && apiData !== null) {
+        // Boolean map shape - handle both 'fuubungen' and 'fusubungen' keys
+        effectivePermissions = menuItems
+          .filter((item) => {
+            const key = item.id === 'fuubungen' ? 'fusubungen' : item.id
+            // Check both the mapped key and original key for safety
+            return apiData[key] === true || apiData[item.id] === true
+          })
+          .map((item) => item.id)
+      }
+
+      return effectivePermissions
+    } catch (error) {
+      console.error('Failed to load feature access for partner:', error)
+      throw error
+    }
+  }
+
+  // Clear permissions when no user selected
   useEffect(() => {
-    if (selectedUserFromRole) {
-      const user = allUsers.find(u => u.id === selectedUserFromRole.id)
-      if (user) {
-        if (user.customPermissions && user.customPermissions.length > 0) {
-          setUserSpecificPermissions(user.customPermissions)
-        } else if (selectedRole) {
-          setUserSpecificPermissions(selectedRole.permissions || [])
-        } else {
-          setUserSpecificPermissions([])
+    if (!selectedUserFromRole) {
+      setUserSpecificPermissions([])
+    }
+  }, [selectedUserFromRole])
+
+  // Update user-specific permissions when selected user changes (Mitarbeiter - API based)
+  useEffect(() => {
+    if (!selectedUserFromRole || !selectedRole || selectedRole.id !== 'mitarbeiter') {
+      return
+    }
+
+    const loadPartnerPermissions = async () => {
+      try {
+        const effectivePermissions = await loadUserPermissionsFromAPI(selectedUserFromRole.id)
+        if (effectivePermissions !== null) {
+          setUserSpecificPermissions(effectivePermissions)
         }
+      } catch (error) {
+        console.error('Failed to load feature access for partner:', error)
+        // On error, set empty permissions
+        setUserSpecificPermissions([])
+      }
+    }
+
+    loadPartnerPermissions()
+  }, [selectedUserFromRole?.id, selectedRole?.id])
+
+  // Update user-specific permissions when selected user changes (non-Mitarbeiter - local/role based)
+  useEffect(() => {
+    if (!selectedUserFromRole || !selectedRole || selectedRole.id === 'mitarbeiter') {
+      return
+    }
+
+    const user = allUsers.find(u => u.id === selectedUserFromRole.id)
+    if (user) {
+      if (user.customPermissions && user.customPermissions.length > 0) {
+        setUserSpecificPermissions(user.customPermissions)
+      } else if (selectedRole) {
+        setUserSpecificPermissions(selectedRole.permissions || [])
+      } else {
+        setUserSpecificPermissions([])
       }
     }
   }, [selectedUserFromRole, allUsers, selectedRole])
@@ -86,8 +212,8 @@ export default function RoleManagement() {
   const handleConfirmRestore = () => {
     const initialRoles = getInitialRoles(menuItems)
     setRoles(initialRoles)
-    setSelectedRole(initialRoles[0])
-    setPermissions(initialRoles[0].permissions)
+    setSelectedRole(null)
+    setPermissions([])
     setConfirmModalOpen(false)
   }
 
@@ -120,6 +246,12 @@ export default function RoleManagement() {
   const getAvailableUsers = () => {
     if (!selectedRole) return []
     const roleUserIds = selectedRole.userIds || []
+
+    // For Mitarbeiter: show all partners that are not yet assigned to this role
+    if (selectedRole.id === 'mitarbeiter') {
+      return allUsers.filter(user => !roleUserIds.includes(user.id))
+    }
+
     return allUsers.filter(user =>
       !user.roleId || user.roleId === selectedRole.id || roleUserIds.includes(user.id)
     )
@@ -182,60 +314,107 @@ export default function RoleManagement() {
   }
 
   // Handle user-specific permission toggle
-  const handleUserSpecificPermissionToggle = (menuId) => {
-    if (!selectedUserFromRole) return
+  const handleUserSpecificPermissionToggle = async (menuId) => {
+    if (!selectedUserFromRole || isTogglingPermission) return
 
+    // Store previous state for rollback
+    const previousPermissions = [...userSpecificPermissions]
+    
+    // Optimistically update UI
     const newPermissions = userSpecificPermissions.includes(menuId)
       ? userSpecificPermissions.filter(id => id !== menuId)
       : [...userSpecificPermissions, menuId]
 
     setUserSpecificPermissions(newPermissions)
+    setIsTogglingPermission(true)
 
-    setAllUsers(allUsers.map(user =>
+    // Update local user state
+    setAllUsers(prevUsers => prevUsers.map(user =>
       user.id === selectedUserFromRole.id
         ? { ...user, customPermissions: newPermissions }
         : user
     ))
+
+    // Persist permissions for Mitarbeiter via feature-access API (partner-based)
+    if (selectedRole?.id === 'mitarbeiter') {
+      try {
+        const body = {}
+
+        menuItems.forEach((item) => {
+          const key =
+            item.id === 'fuubungen'
+              ? 'fusubungen'
+              : item.id
+          body[key] = newPermissions.includes(item.id)
+        })
+
+        await postAllPermissions(selectedUserFromRole.id, body)
+      } catch (error) {
+        console.error('Failed to update feature access for partner:', error)
+        // Rollback on error
+        setUserSpecificPermissions(previousPermissions)
+        setAllUsers(prevUsers => prevUsers.map(user =>
+          user.id === selectedUserFromRole.id
+            ? { ...user, customPermissions: previousPermissions }
+            : user
+        ))
+        // You might want to show a toast/notification here
+      } finally {
+        setIsTogglingPermission(false)
+      }
+    } else {
+      // For non-Mitarbeiter roles, no API call needed
+      setIsTogglingPermission(false)
+    }
   }
 
   const roleUsers = getRoleUsers()
   const availableUsers = getAvailableUsers()
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="w-full mx-auto">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 p-4 sm:p-6 lg:p-8">
+      <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="mb-6">
-          <div className="flex items-center gap-3 mb-2">
-            <Shield className="h-8 w-8 text-blue-600" />
-            <h1 className="text-3xl font-bold text-gray-900">Rollen & Zugriffsrechte</h1>
+        <div className="mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
+            <div className="flex items-center gap-4">
+              <div className="p-2.5 bg-gradient-to-br from-[#41A63E] to-[#41A63E] rounded-lg shadow-md shadow-green-500/20">
+                <Shield className="h-5 w-5 text-white" />
+              </div>
+              <div>
+                <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-0.5">
+                  Rollen & Zugriffsrechte
+                </h1>
+                <p className="text-gray-600 text-xs sm:text-sm">
+                  Bestimmen Sie, welche Mitarbeitenden welche Bereiche sehen und nutzen dürfen.
+                </p>
+              </div>
+            </div>
+            
+            {/* Action Buttons */}
+            <div className="flex flex-col sm:flex-row gap-3">
+              <Button
+                variant="outline"
+                onClick={handleRestoreDefaults}
+                className="flex items-center gap-2 cursor-pointer border-gray-300 hover:bg-gray-50 transition-all duration-200"
+              >
+                <RotateCcw className="h-4 w-4" />
+                <span className="hidden sm:inline">Standardrollen wiederherstellen</span>
+                <span className="sm:hidden">Wiederherstellen</span>
+              </Button>
+              <Button
+                onClick={() => setCreateRoleModalOpen(true)}
+                className="flex items-center gap-2 cursor-pointer bg-gradient-to-r from-[#41A63E] to-[#41A63E] hover:from-[#41A63E] hover:to-[#41A63E] text-white shadow-lg shadow-green-500/30 transition-all duration-200 hover:shadow-xl hover:shadow-green-500/40"
+              >
+                <Plus className="h-4 w-4" />
+                Neue Rolle erstellen
+              </Button>
+            </div>
           </div>
-          <p className="text-gray-600 ml-11">
-            Bestimmen Sie, welche Mitarbeitenden welche Bereiche sehen und nutzen dürfen.
-          </p>
-        </div>
-
-        {/* Action Buttons */}
-        <div className="flex justify-end gap-3 mb-6">
-          <Button
-            variant="outline"
-            onClick={handleRestoreDefaults}
-            className="flex items-center gap-2"
-          >
-            <RotateCcw className="h-4 w-4" />
-            Standardrollen wiederherstellen
-          </Button>
-          <Button
-            onClick={() => setCreateRoleModalOpen(true)}
-            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700"
-          >
-            <Plus className="h-4 w-4" />
-            Neue Rolle erstellen
-          </Button>
         </div>
 
         {/* Main Content */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
           {/* Left Panel - Roles List */}
           <div className="lg:col-span-1">
             <RolesList
@@ -249,29 +428,20 @@ export default function RoleManagement() {
           {/* Right Panel - Permissions */}
           <div className="lg:col-span-2 space-y-6">
             {/* Users Section */}
-            <UsersList
-              selectedRole={selectedRole}
-              roleUsers={roleUsers}
-              selectedUserFromRole={selectedUserFromRole}
-              onUserSelect={setSelectedUserFromRole}
-              onAssignUser={() => setAssignUserModalOpen(true)}
-              onRemoveUser={handleRemoveUser}
-              getUserEffectivePermissions={getUserEffectivePermissions}
-            />
-
-            {/* Permissions Section */}
-            {selectedRole && !selectedUserFromRole && (
-              <PermissionsList
-                title={`Berechtigungen für ${selectedRole.name}`}
-                permissions={permissions}
-                menuItems={menuItems}
-                searchQuery={searchQuery}
-                onSearchChange={setSearchQuery}
-                onPermissionToggle={handlePermissionToggle}
+            {selectedRole && (
+              <UsersList
+                selectedRole={selectedRole}
+                roleUsers={roleUsers}
+                availableUsers={availableUsers}
+                selectedUserFromRole={selectedUserFromRole}
+                onUserSelect={setSelectedUserFromRole}
+                onAssignUser={() => setAssignUserModalOpen(true)}
+                onRemoveUser={handleRemoveUser}
+                getUserEffectivePermissions={getUserEffectivePermissions}
               />
             )}
 
-            {/* User-Specific Permissions View */}
+            {/* User-Specific Permissions View - Only shows when user is selected */}
             {selectedRole && selectedUserFromRole && (
               <UserPermissionsView
                 user={selectedUserFromRole}
@@ -282,7 +452,50 @@ export default function RoleManagement() {
                 onSearchChange={setUserPermissionSearch}
                 onPermissionToggle={handleUserSpecificPermissionToggle}
                 onBack={() => setSelectedUserFromRole(null)}
+                isToggling={isTogglingPermission}
               />
+            )}
+
+            {/* Empty State - No Role Selected */}
+            {!selectedRole && (
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
+                <div className="max-w-md mx-auto">
+                  <div className="p-3 bg-gray-100 rounded-full w-16 h-16 mx-auto mb-3 flex items-center justify-center">
+                    <Shield className="h-8 w-8 text-gray-400" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-1.5">
+                    Wählen Sie eine Rolle aus
+                  </h3>
+                  <p className="text-sm text-gray-600 mb-5">
+                    Wählen Sie eine Rolle aus der Liste aus, um deren Berechtigungen zu verwalten.
+                  </p>
+                  <Button
+                    onClick={() => setCreateRoleModalOpen(true)}
+                    className="bg-gradient-to-r from-[#41A63E] to-[#41A63E] hover:from-[#41A63E] hover:to-[#41A63E] text-white text-sm"
+                    size="sm"
+                  >
+                    <Plus className="h-3.5 w-3.5 mr-1.5" />
+                    Erste Rolle erstellen
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {/* Empty State - Role Selected but No User Selected */}
+            {selectedRole && !selectedUserFromRole && (
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
+                <div className="max-w-md mx-auto">
+                  <div className="p-3 bg-blue-100 rounded-full w-16 h-16 mx-auto mb-3 flex items-center justify-center">
+                    <Shield className="h-8 w-8 text-blue-500" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-1.5">
+                    Wählen Sie einen Nutzer aus
+                  </h3>
+                  <p className="text-sm text-gray-600">
+                    Wählen Sie einen Nutzer aus der Liste aus, um dessen Berechtigungen zu verwalten.
+                  </p>
+                </div>
+              </div>
             )}
           </div>
         </div>
@@ -296,7 +509,7 @@ export default function RoleManagement() {
           onCreateRole={handleCreateNewRole}
         />
 
-        {selectedRole && (
+        {selectedRole && selectedRole.id !== 'mitarbeiter' && selectedRole.id !== 'admin' && (
           <AssignUserModal
             open={assignUserModalOpen}
             onOpenChange={setAssignUserModalOpen}
