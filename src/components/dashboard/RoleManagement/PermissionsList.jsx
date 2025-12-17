@@ -23,11 +23,8 @@ export default function PermissionsList({
 
   return (
     <div className="!shadow-none !border-none">
-      <CardHeader className="bg-gradient-to-r from-gray-50 to-white border-b border-gray-200 py-3 px-4">
-        <div className="flex items-center gap-1.5 mb-1.5">
-          <Shield className="h-4 w-4 text-blue-600" />
-          <CardTitle className="text-base font-semibold text-gray-900">{title}</CardTitle>
-        </div>
+      <div className="py-3 px-4">
+      <h3  className="text-base font-semibold text-gray-900">{title}</h3>
         <div className="flex items-center gap-3 ml-5.5">
           <div className="flex items-center gap-1.5">
             <div className="flex items-center gap-1 px-2 py-0.5 bg-green-50 rounded-full border border-green-200">
@@ -46,8 +43,8 @@ export default function PermissionsList({
             <span className="font-semibold text-blue-600">{percentage}%</span> Zugriff gewährt
           </div>
         </div>
-      </CardHeader>
-      <CardContent className="p-3">
+      </div>
+      <div className="p-3">
         {/* Search Bar */}
         <div className="mb-4">
           <div className="relative">
@@ -145,7 +142,7 @@ export default function PermissionsList({
             </div>
           )}
         </div>
-      </CardContent>
+        </div>
     </div>
   )
 }
