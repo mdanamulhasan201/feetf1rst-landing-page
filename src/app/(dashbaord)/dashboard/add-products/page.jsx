@@ -47,9 +47,6 @@ export default function AddProducts() {
         'Business-Schuhe',
     ]
 
-
-    // Gender options
-
     const genders = [
         'Herren',
         'Damen ',
