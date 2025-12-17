@@ -1,10 +1,10 @@
 'use client'
 
 import { Shield, Users, CheckCircle2, Lock } from 'lucide-react'
-import { Button } from '../../../components/ui/button'
+
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card'
 
-export default function RolesList({ roles, selectedRole, onRoleSelect, menuItems }) {
+export default function RolesList({ roles, selectedRole, onRoleSelect }) {
   return (
     <Card className="shadow-lg border-gray-200">
       <CardHeader className="bg-gradient-to-r from-gray-50 to-white border-b border-gray-200  px-4">
@@ -23,8 +23,6 @@ export default function RolesList({ roles, selectedRole, onRoleSelect, menuItems
         ) : (
           roles.map((role) => {
             const isSelected = selectedRole?.id === role.id
-            const isFullAccess = role.permissions.length === menuItems.length
-            const permissionPercentage = Math.round((role.permissions.length / menuItems.length) * 100)
             
             return (
               <div
@@ -60,55 +58,8 @@ export default function RolesList({ roles, selectedRole, onRoleSelect, menuItems
                       </h3>
                     </div>
                     
-                    <div className="flex items-center gap-3 mt-2">
-                      <div className="flex items-center gap-1 text-xs text-gray-600">
-                        <Users className="h-3.5 w-3.5" />
-                        <span className="font-medium">{role.userCount}</span>
-                        <span className="text-gray-500">Nutzer</span>
-                      </div>
-                      <div className="flex items-center gap-1 text-xs text-gray-600">
-                        <CheckCircle2 className="h-3.5 w-3.5" />
-                        <span className="font-medium">{permissionPercentage}%</span>
-                        <span className="text-gray-500">Zugriff</span>
-                      </div>
-                    </div>
-                    
-                    {/* Permission Progress Bar */}
-                    <div className="mt-2">
-                      <div className="h-1 bg-gray-200 rounded-full overflow-hidden">
-                        <div
-                          className={`h-full transition-all duration-500 ${
-                            isFullAccess
-                              ? 'bg-gradient-to-r from-green-500 to-green-600'
-                              : 'bg-gradient-to-r from-[#41A63E] to-[#41A63E]'
-                          }`}
-                          style={{ width: `${permissionPercentage}%` }}
-                        />
-                      </div>
-                    </div>
                   </div>
-                  
-                  <div className="flex-shrink-0">
-                    <div
-                      className={`px-2 py-1 rounded-md text-[10px] font-semibold whitespace-nowrap ${
-                        isFullAccess
-                          ? 'bg-gradient-to-r from-green-500 to-green-600 text-white shadow-sm'
-                          : 'bg-gray-100 text-gray-700 border border-gray-300'
-                      }`}
-                    >
-                      {isFullAccess ? (
-                        <div className="flex items-center gap-0.5">
-                          <CheckCircle2 className="h-2.5 w-2.5" />
-                          <span>Vollzugriff</span>
-                        </div>
-                      ) : (
-                        <div className="flex items-center gap-0.5">
-                          <Lock className="h-2.5 w-2.5" />
-                          <span>Eingeschränkt</span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
+                
                 </div>
               </div>
             )

@@ -101,13 +101,7 @@ export default function UsersList({
                         <Mail className="h-3 w-3" />
                         <span className="truncate">{user.email}</span>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <div className="flex items-center gap-1 text-[10px] text-gray-500">
-                          <Shield className="h-3 w-3" />
-                          <span className="font-medium text-gray-700">{effectivePermissions.length}</span>
-                          <span>Berechtigungen</span>
-                        </div>
-                      </div>
+                     
                     </div>
                   </div>
                   
