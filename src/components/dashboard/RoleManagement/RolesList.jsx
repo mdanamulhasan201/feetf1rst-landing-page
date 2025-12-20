@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui
 
 export default function RolesList({ roles, selectedRole, onRoleSelect }) {
   return (
-    <Card className="shadow-lg border-gray-200">
+    <Card className=" border-gray-200">
       <CardHeader className="bg-gradient-to-r from-gray-50 to-white border-b border-gray-200  px-4">
         <div className="flex items-center gap-2">
           <Shield className="h-4 w-4 text-blue-600" />
