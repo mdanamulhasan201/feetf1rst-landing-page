@@ -18,7 +18,7 @@ const nextConfig = {
       },
       {
         protocol: 'https',
-        hostname: 'fragrances-passenger-fish-head.trycloudflare.com',
+        hostname: 'earnings-reporting-discharge-triple.trycloudflare.com',
       },
 
     ],

@@ -3,7 +3,6 @@
 import { Search, CheckCircle2, XCircle, Shield } from 'lucide-react'
 import { Input } from '../../../components/ui/input'
 import { Switch } from '../../../components/ui/switch'
-import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card'
 
 export default function PermissionsList({ 
   title,
@@ -74,13 +73,8 @@ export default function PermissionsList({
           
           <div className="space-y-1.5">
             {filteredMenuItems.map((item) => {
-              const Icon = item.icon
+              const IconComponent = item.icon
               const isEnabled = permissions.includes(item.id)
-              
-              if (!Icon) {
-                console.warn(`Icon not found for menu item: ${item.id}`)
-                return null
-              }
               
               return (
                 <div
@@ -92,14 +86,23 @@ export default function PermissionsList({
                   }`}
                 >
                   <div className="flex items-center gap-3 flex-1 min-w-0">
-                    <div className={`p-2 rounded-lg transition-all duration-200 ${
+                    <div className={`p-2 rounded-lg transition-all duration-200 flex items-center justify-center min-w-[32px] min-h-[32px] ${
                       isEnabled
                         ? 'bg-gradient-to-br from-green-100 to-green-200 shadow-sm'
                         : 'bg-gray-100 group-hover:bg-gray-200'
                     }`}>
-                      <Icon className={`h-4 w-4 transition-colors duration-200 ${
-                        isEnabled ? 'text-green-700' : 'text-gray-600'
-                      }`} />
+                      {IconComponent ? (
+                        <IconComponent 
+                          className={`h-4 w-4 transition-colors duration-200 flex-shrink-0 ${
+                            isEnabled ? 'text-green-700' : 'text-gray-600'
+                          }`}
+                          size={16}
+                        />
+                      ) : (
+                        <div className={`h-4 w-4 rounded transition-colors duration-200 ${
+                          isEnabled ? 'bg-green-700' : 'bg-gray-600'
+                        }`} />
+                      )}
                     </div>
                     <div className="flex-1 min-w-0">
                       <span className={`font-semibold text-sm block ${

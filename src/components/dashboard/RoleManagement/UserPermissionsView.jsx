@@ -10,7 +10,6 @@ export default function UserPermissionsView({
   onPermissionToggle,
   isToggling = false
 }) {
-  
   return (
     <div className="border border-gray-200">
     

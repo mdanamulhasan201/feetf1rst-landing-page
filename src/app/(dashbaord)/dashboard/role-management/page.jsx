@@ -10,16 +10,33 @@ import UserPermissionsView from '../../../../components/dashboard/RoleManagement
 import CreateRoleModal from '../../../../components/dashboard/RoleManagement/CreateRoleModal'
 import AssignUserModal from '../../../../components/dashboard/RoleManagement/AssignUserModal'
 import ConfirmModal from '../../../../components/shared/ConfirmModal'
-import { menuItems, mockUsers, getInitialRoles } from '../../../../components/dashboard/RoleManagement/constants'
+import { menuItems } from '../../../../components/dashboard/RoleManagement/constants'
 import { getAllPartners } from '../../../../apis/authApis'
 import { getAllPermissions, postAllPermissions } from '../../../../apis/roleManagementApis'
 
 export default function RoleManagement() {
-  const [roles, setRoles] = useState(() => getInitialRoles(menuItems))
+  const [roles, setRoles] = useState([
+    {
+      id: "admin",
+      name: "Admin",
+      userCount: 0,
+      permissions: [],
+      accessType: "full",
+      userIds: [],
+    },
+    {
+      id: "mitarbeiter",
+      name: "Mitarbeiter",
+      userCount: 0,
+      permissions: [],
+      accessType: "restricted",
+      userIds: [],
+    },
+  ])
   const [selectedRole, setSelectedRole] = useState(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [permissions, setPermissions] = useState([])
-  const [allUsers, setAllUsers] = useState(mockUsers)
+  const [allUsers, setAllUsers] = useState([])
   const [assignUserModalOpen, setAssignUserModalOpen] = useState(false)
   const [userSearchQuery, setUserSearchQuery] = useState('')
   const [createRoleModalOpen, setCreateRoleModalOpen] = useState(false)
@@ -114,11 +131,21 @@ export default function RoleManagement() {
           .map((item) => item.id)
       } else if (typeof apiData === 'object' && apiData !== null) {
         // Boolean map shape - handle both 'fuubungen' and 'fusubungen' keys
+        // Ignore non-permission fields from API response
+        const ignoredKeys = ['id', 'partnerId', 'createdAt', 'updatedAt', 'success', 'message']
+        
         effectivePermissions = menuItems
           .filter((item) => {
-            const key = item.id === 'fuubungen' ? 'fusubungen' : item.id
-            // Check both the mapped key and original key for safety
-            return apiData[key] === true || apiData[item.id] === true
+            // Map 'fuubungen' to 'fusubungen' for API key lookup
+            const apiKey = item.id === 'fuubungen' ? 'fusubungen' : item.id
+            
+            // Skip ignored fields
+            if (ignoredKeys.includes(apiKey) || ignoredKeys.includes(item.id)) {
+              return false
+            }
+            
+            // Check both the mapped key (fusubungen) and original key (fuubungen) for safety
+            return apiData[apiKey] === true || apiData[item.id] === true
           })
           .map((item) => item.id)
       }
@@ -151,7 +178,6 @@ export default function RoleManagement() {
         }
       } catch (error) {
         console.error('Failed to load feature access for partner:', error)
-        // On error, set empty permissions
         setUserSpecificPermissions([])
       }
     }
@@ -210,7 +236,24 @@ export default function RoleManagement() {
   }
 
   const handleConfirmRestore = () => {
-    const initialRoles = getInitialRoles(menuItems)
+    const initialRoles = [
+      {
+        id: "admin",
+        name: "Admin",
+        userCount: 0,
+        permissions: [],
+        accessType: "full",
+        userIds: [],
+      },
+      {
+        id: "mitarbeiter",
+        name: "Mitarbeiter",
+        userCount: 0,
+        permissions: [],
+        accessType: "restricted",
+        userIds: [],
+      },
+    ]
     setRoles(initialRoles)
     setSelectedRole(null)
     setPermissions([])
