@@ -18,7 +18,7 @@ const nextConfig = {
       },
       {
         protocol: 'https',
-        hostname: 'earnings-reporting-discharge-triple.trycloudflare.com',
+        hostname: 'mazda-ambien-recall-pierre.trycloudflare.com',
       },
 
     ],
