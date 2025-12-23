@@ -14,7 +14,7 @@ const nextConfig = {
       },
       {
         protocol: 'https',
-        hostname: 'download-rhode-ceremony-feet.trycloudflare.com',
+        hostname: 'magical-char-florists-areas.trycloudflare.com',
       },
 
     ],

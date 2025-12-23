@@ -253,8 +253,8 @@ export default function Settings() {
                                 <label className="block text-sm font-medium text-gray-700 mb-3">
                                     Profile Picture
                                 </label>
-                                <div className="relative w-32 h-32 mx-auto">
-                                    <div className="w-full h-full rounded-full p-2 border">
+                                <div className="relative w-32 h-32 mx-auto overflow-hidden">
+                                    <div className="w-full h-full rounded-full p-2 border overflow-hidden">
                                         {profileImage ? (
                                             <Image
                                                 width={400}
@@ -264,8 +264,8 @@ export default function Settings() {
                                                 className="w-full h-full p-3"
                                             />
                                         ) : (
-                                            <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
+                                            <div className="w-full h-full  flex items-center justify-center">
+                                                <svg xmlns="http://www.w3.org/2000/svg" className=" text-gray-300" viewBox="0 0 20 20" fill="currentColor">
                                                     <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
                                                 </svg>
                                             </div>
