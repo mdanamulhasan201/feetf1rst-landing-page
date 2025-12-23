@@ -26,7 +26,9 @@ export default function Navbar({ onMenuClick }) {
             <div className="relative h-12 w-12 rounded-full p-1 border">
               {user.image ? (
                 <Image
-                  src={user.image}
+                  src={user.image.startsWith('http://') || user.image.startsWith('https://') || user.image.startsWith('/') 
+                    ? user.image 
+                    : `https://${user.image}`}
                   alt={user?.name || 'User avatar'}
                   width={100}
                   height={100}
