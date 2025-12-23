@@ -24,6 +24,7 @@ export default function Sidebar({ onClose }) {
         { icon: HiCog, label: 'Settings', href: '/dashboard/settings' },
         { icon: HiUserGroup, label: 'Role Management', href: '/dashboard/role-management' },
         { icon: HiCube, label: 'Software Management', href: '/dashboard/software-management' },
+        { icon: HiDocumentText, label: 'Suggestions', href: '/dashboard/suggestions' },
     ];
 
     const handleLogout = () => {
