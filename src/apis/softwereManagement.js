@@ -15,7 +15,7 @@ export const createSoftwareManagement = async (softwareManagementData) => {
   }
 };
 // get all software management /v2/software_version/get-all?page=1&limit=2
-export const getAllSoftwareManagement = async (page = 1, limit = 2) => {
+export const getAllSoftwareManagement = async (page, limit) => {
   try {
     const response = await axiosClient.get(
       `/v2/software_version/get-all?page=${page}&limit=${limit}`

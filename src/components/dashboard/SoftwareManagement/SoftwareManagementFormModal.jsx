@@ -41,6 +41,7 @@ export default function SoftwareManagementFormModal({
     // Load editing data when modal opens
     useEffect(() => {
         if (open && editingData) {
+            // Editing mode - load existing data
             setFormData({
                 version: editingData.version || "",
                 releaseDate: editingData.releaseDate || new Date().toISOString(),
@@ -51,10 +52,13 @@ export default function SoftwareManagementFormModal({
                     : [{ title: "", desc: [""] }]
             })
         } else if (open && !editingData) {
-            // Reset form for new entry
+            // Create mode - set today's date automatically
+            const today = new Date()
+            const todayISOString = today.toISOString()
+
             setFormData({
                 version: "",
-                releaseDate: new Date().toISOString(),
+                releaseDate: todayISOString,
                 title: "",
                 isNewest: false,
                 description: [{ title: "", desc: [""] }]

@@ -134,10 +134,10 @@ export default function SoftwareManagement() {
     {
       header: 'Version',
       accessor: (item) => (
-        <div className="flex items-center gap-2">
-          <span className="font-semibold text-gray-900">{item.version}</span>
+        <div className="flex items-center gap-2 flex-nowrap">
+          <span className="font-semibold text-gray-900 whitespace-nowrap">{item.version}</span>
           {item.isNewest && (
-            <Badge className="bg-green-100 text-green-800 hover:bg-green-100">
+            <Badge className="bg-green-100 text-green-800 hover:bg-green-100 whitespace-nowrap flex-shrink-0">
               Newest
             </Badge>
           )}

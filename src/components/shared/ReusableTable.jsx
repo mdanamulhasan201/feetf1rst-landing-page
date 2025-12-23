@@ -76,11 +76,12 @@ export default function ReusableTable({
 
     return (
         <div className={`bg-white rounded-lg border border-gray-200 overflow-hidden w-full ${containerClassName}`}>
-            <div className="overflow-x-auto">
-                <Table 
-                    className={`w-full table-fixed border-collapse ${tableClassName}`} 
-                    style={{ tableLayout: 'fixed', width: '100%', borderSpacing: 0 }}
-                >
+            <div className="overflow-x-auto overflow-y-visible -mx-1">
+                <div className="inline-block min-w-full align-middle">
+                    <Table 
+                        className={`w-full table-fixed border-collapse ${tableClassName}`} 
+                        style={{ tableLayout: 'fixed', width: '100%', minWidth: '900px', borderSpacing: 0 }}
+                    >
                     <colgroup>
                         {columns.map((col, index) => (
                             <col 
@@ -94,7 +95,7 @@ export default function ReusableTable({
                             {columns.map((column, index) => (
                                 <TableHead
                                     key={index}
-                                    className={`font-semibold text-gray-700 px-2 py-3 ${column.headerClassName || ''} ${column.align === 'center' ? 'text-center' : column.align === 'right' ? 'text-right' : ''}`}
+                                    className={`font-semibold text-gray-700 px-3 py-3 whitespace-nowrap ${column.headerClassName || ''} ${column.align === 'center' ? 'text-center' : column.align === 'right' ? 'text-right' : ''}`}
                                 >
                                     {column.header}
                                 </TableHead>
@@ -151,7 +152,7 @@ export default function ReusableTable({
                                         return (
                                             <TableCell
                                                 key={colIndex}
-                                                className={`px-2 py-3 ${column.cellClassName || ''} ${column.align === 'center' ? 'text-center' : column.align === 'right' ? 'text-right' : ''}`}
+                                                className={`px-3 py-3 whitespace-nowrap ${column.cellClassName || ''} ${column.align === 'center' ? 'text-center' : column.align === 'right' ? 'text-right' : ''}`}
                                             >
                                                 {cellContent}
                                             </TableCell>
@@ -161,7 +162,8 @@ export default function ReusableTable({
                             ))
                         )}
                     </TableBody>
-                </Table>
+                    </Table>
+                </div>
             </div>
 
             {/* Pagination */}
