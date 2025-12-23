@@ -3,7 +3,7 @@ import React from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { IoClose } from 'react-icons/io5'
-import { HiPencilAlt, HiCollection, HiCog, HiArrowRightOnRectangle, HiDocumentText, HiUserGroup } from 'react-icons/hi'
+import { HiPencilAlt, HiCollection, HiCog, HiArrowRightOnRectangle, HiDocumentText, HiUserGroup, HiCube } from 'react-icons/hi'
 import { useAuth } from '../../context/AuthContext'
 import { Image, Upload, UserPlus } from 'lucide-react'
 import { MdProductionQuantityLimits } from "react-icons/md";
@@ -23,6 +23,7 @@ export default function Sidebar({ onClose }) {
         { icon: HiDocumentText , label: 'Bestellubersicht', href: '/dashboard/bestellubersicht' },
         { icon: HiCog, label: 'Settings', href: '/dashboard/settings' },
         { icon: HiUserGroup, label: 'Role Management', href: '/dashboard/role-management' },
+        { icon: HiCube, label: 'Software Management', href: '/dashboard/software-management' },
     ];
 
     const handleLogout = () => {
