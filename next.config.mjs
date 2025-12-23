@@ -18,7 +18,7 @@ const nextConfig = {
       },
       {
         protocol: 'https',
-        hostname: 'mazda-ambien-recall-pierre.trycloudflare.com',
+        hostname: 'activation-country-later-relevant.trycloudflare.com',
       },
 
     ],
