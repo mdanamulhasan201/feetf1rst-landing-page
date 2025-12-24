@@ -18,7 +18,7 @@ const nextConfig = {
       },
       {
         protocol: 'https',
-        hostname: 'activation-country-later-relevant.trycloudflare.com',
+        hostname: 'continental-separately-century-usual.trycloudflare.com',
       },
 
     ],
