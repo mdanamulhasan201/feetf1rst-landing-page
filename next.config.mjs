@@ -18,7 +18,7 @@ const nextConfig = {
       },
       {
         protocol: 'https',
-        hostname: 'continental-separately-century-usual.trycloudflare.com',
+        hostname: 'clip-gore-simpson-sox.trycloudflare.com',
       },
 
     ],
