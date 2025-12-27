@@ -11,12 +11,55 @@ import {
 import { Button } from "../../ui/button"
 import { Input } from "../../ui/input"
 import { Label } from "../../ui/label"
-import { Textarea } from "../../ui/textarea"
 import { Switch } from "../../ui/switch"
 import { Card, CardContent, CardHeader, CardTitle } from "../../ui/card"
 import { Plus, X, Trash2, Save, Calendar } from "lucide-react"
 import { toast } from "react-hot-toast"
 import { createSoftwareManagement, updateSoftwareManagement } from "../../../apis/softwereManagement"
+import JoditEditor from "jodit-react"
+
+const editorConfig = {
+    readonly: false,
+    height: 200,
+    toolbar: true,
+    spellcheck: false,
+    language: "en",
+    toolbarButtonSize: "medium",
+    toolbarAdaptive: false,
+    showCharsCounter: false,
+    showWordsCounter: false,
+    showXPathInStatusbar: false,
+    askBeforePasteHTML: false,
+    askBeforePasteFromWord: false,
+    defaultActionOnPaste: "insert_clear_html",
+    buttons: [
+        "source",
+        "|",
+        "bold",
+        "italic",
+        "underline",
+        "strikethrough",
+        "|",
+        "ul",
+        "ol",
+        "|",
+        "center",
+        "left",
+        "right",
+        "justify",
+        "|",
+        "link",
+        "image",
+        "|",
+        "hr",
+        "eraser",
+        "|",
+        "undo",
+        "redo",
+        "|",
+        "fullsize",
+    ],
+};
 
 export default function SoftwareManagementFormModal({
     open,
@@ -376,18 +419,17 @@ export default function SoftwareManagementFormModal({
                                                     key={descIndex}
                                                     className="flex items-start gap-2"
                                                 >
-                                                    <div className="flex-1">
-                                                        <Textarea
+                                                    <div className="flex-1 border rounded-md">
+                                                        <JoditEditor
                                                             value={item}
-                                                            onChange={(e) =>
+                                                            config={editorConfig}
+                                                            onChange={(newContent) =>
                                                                 updateDescItem(
                                                                     sectionIndex,
                                                                     descIndex,
-                                                                    e.target.value
+                                                                    newContent
                                                                 )
                                                             }
-                                                            placeholder="Enter description item..."
-                                                            className="min-h-[60px]"
                                                         />
                                                     </div>
                                                     {section.desc.length > 1 && (
