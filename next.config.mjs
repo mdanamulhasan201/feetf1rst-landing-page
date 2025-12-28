@@ -24,7 +24,7 @@ const nextConfig = {
       {
         protocol: 'https',
         hostname: 'talking-ventures-theorem-seats.trycloudflare.com',
-      }
+      },
       // 127.0.0.1
       {
         protocol: 'http',
