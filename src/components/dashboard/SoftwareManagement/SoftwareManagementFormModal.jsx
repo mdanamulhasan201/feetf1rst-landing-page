@@ -32,33 +32,50 @@ const editorConfig = {
     askBeforePasteHTML: false,
     askBeforePasteFromWord: false,
     defaultActionOnPaste: "insert_clear_html",
+    zIndex: 9999,
     buttons: [
-        "source",
-        "|",
         "bold",
         "italic",
-        "underline",
-        "strikethrough",
         "|",
         "ul",
         "ol",
         "|",
-        "center",
         "left",
+        "center",
         "right",
         "justify",
-        "|",
-        "link",
-        "image",
-        "|",
-        "hr",
-        "eraser",
-        "|",
-        "undo",
-        "redo",
-        "|",
-        "fullsize",
     ],
+    removeButtons: [],
+    disablePlugins: ["fullsize", "source", "about", "print", "preview"],
+    enter: "P",
+    enterBr: "BR",
+    useNativeTooltip: false,
+    controls: {
+        bold: {
+            tooltip: "Bold"
+        },
+        italic: {
+            tooltip: "Italic"
+        },
+        ul: {
+            tooltip: "Unordered List (Bullets)"
+        },
+        ol: {
+            tooltip: "Ordered List (Numbers)"
+        },
+        left: {
+            tooltip: "Align Left"
+        },
+        center: {
+            tooltip: "Align Center"
+        },
+        right: {
+            tooltip: "Align Right"
+        },
+        justify: {
+            tooltip: "Justify"
+        }
+    }
 };
 
 export default function SoftwareManagementFormModal({
@@ -108,6 +125,125 @@ export default function SoftwareManagementFormModal({
             })
         }
     }, [open, editingData])
+
+    // Fix dropdown positioning for JoditEditor
+    useEffect(() => {
+        if (!open) return
+
+        const styleId = 'jodit-dropdown-modal-fix'
+        let styleElement = document.getElementById(styleId)
+        
+        if (!styleElement) {
+            styleElement = document.createElement('style')
+            styleElement.id = styleId
+            document.head.appendChild(styleElement)
+        }
+        
+        // CSS to ensure dropdowns can overflow properly
+        styleElement.textContent = `
+            [data-slot="dialog-content"] .jodit-toolbar-button {
+                position: relative !important;
+            }
+            [data-slot="dialog-content"] .jodit-toolbar-editor-collection {
+                overflow: visible !important;
+            }
+            [data-slot="dialog-content"] .jodit-toolbar {
+                overflow: visible !important;
+            }
+            [data-slot="dialog-content"] .jodit-container {
+                overflow: visible !important;
+            }
+            [data-slot="dialog-content"] {
+                overflow-x: visible !important;
+            }
+        `
+        
+        // Function to fix dropdown position using fixed positioning
+        const fixDropdownPosition = (e) => {
+            const button = e?.target?.closest('.jodit-toolbar-button')
+            if (!button) return
+            
+            setTimeout(() => {
+                const dropdown = document.querySelector('[data-slot="dialog-content"] .jodit-dropdown')
+                if (!dropdown || dropdown.style.display === 'none') return
+                
+                const buttonRect = button.getBoundingClientRect()
+                const dialogContent = document.querySelector('[data-slot="dialog-content"]')
+                if (!dialogContent) return
+                
+                const dialogRect = dialogContent.getBoundingClientRect()
+                
+                // Use fixed positioning relative to viewport
+                dropdown.style.position = 'fixed'
+                dropdown.style.zIndex = '10000'
+                
+                let top = buttonRect.bottom + 2
+                let left = buttonRect.left
+                
+                // Get dropdown height (might need to measure)
+                dropdown.style.visibility = 'hidden'
+                dropdown.style.display = 'block'
+                const dropdownHeight = dropdown.offsetHeight
+                const dropdownWidth = dropdown.offsetWidth
+                dropdown.style.visibility = ''
+                
+                // Check if dropdown goes below dialog
+                if (top + dropdownHeight > dialogRect.bottom) {
+                    const spaceAbove = buttonRect.top - dialogRect.top
+                    if (spaceAbove > dropdownHeight) {
+                        // Show above button
+                        top = buttonRect.top - dropdownHeight - 2
+                    } else {
+                        // Limit to dialog bottom
+                        top = dialogRect.bottom - dropdownHeight - 10
+                    }
+                }
+                
+                // Check horizontal boundaries
+                if (left + dropdownWidth > dialogRect.right) {
+                    left = dialogRect.right - dropdownWidth - 10
+                }
+                if (left < dialogRect.left) {
+                    left = dialogRect.left + 10
+                }
+                
+                dropdown.style.top = `${top}px`
+                dropdown.style.left = `${left}px`
+            }, 50)
+        }
+        
+        document.addEventListener('click', fixDropdownPosition, true)
+        
+        // Also use MutationObserver to catch when dropdown appears
+        const observer = new MutationObserver(() => {
+            const dropdown = document.querySelector('[data-slot="dialog-content"] .jodit-dropdown')
+            if (dropdown && dropdown.style.display !== 'none') {
+                const button = document.querySelector('[data-slot="dialog-content"] .jodit-toolbar-button_active, [data-slot="dialog-content"] .jodit-toolbar-button:has(.jodit-dropdown)')
+                if (button) {
+                    fixDropdownPosition({ target: button })
+                }
+            }
+        })
+        
+        const dialogContent = document.querySelector('[data-slot="dialog-content"]')
+        if (dialogContent) {
+            observer.observe(dialogContent, {
+                childList: true,
+                subtree: true,
+                attributes: true,
+                attributeFilter: ['style', 'class']
+            })
+        }
+        
+        return () => {
+            observer.disconnect()
+            document.removeEventListener('click', fixDropdownPosition, true)
+            const element = document.getElementById(styleId)
+            if (element) {
+                element.remove()
+            }
+        }
+    }, [open])
 
     // Handle basic field changes
     const handleChange = (field, value) => {
@@ -266,7 +402,7 @@ export default function SoftwareManagementFormModal({
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="!max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogContent className="!max-w-4xl max-h-[90vh] overflow-y-auto overflow-x-visible [&_.jodit-container]:z-[60] [&_.jodit-toolbar-editor-collection]:z-[60] [&_.jodit-popup]:z-[60] [&_.jodit-dropdown]:z-[60] [&_.jodit-toolbar]:overflow-visible [&_.jodit-toolbar-editor-collection]:overflow-visible">
                 <DialogHeader>
                     <DialogTitle>
                         {editingData ? "Update Release Notes" : "Create Release Notes"}
@@ -419,7 +555,7 @@ export default function SoftwareManagementFormModal({
                                                     key={descIndex}
                                                     className="flex items-start gap-2"
                                                 >
-                                                    <div className="flex-1 border rounded-md">
+                                                    <div className="flex-1 border rounded-md relative [&_.jodit-container]:!z-[60] [&_.jodit-toolbar-editor-collection]:!z-[60] [&_.jodit-popup]:!z-[60] [&_.jodit-dropdown]:!z-[60] [&_.jodit-toolbar]:overflow-visible [&_.jodit-toolbar-editor-collection]:overflow-visible [&_.jodit-toolbar-button]:relative [&_.jodit-toolbar-button__trigger]:relative">
                                                         <JoditEditor
                                                             value={item}
                                                             config={editorConfig}
