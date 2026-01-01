@@ -23,7 +23,7 @@ const nextConfig = {
 
       {
         protocol: 'https',
-        hostname: 'talking-ventures-theorem-seats.trycloudflare.com',
+        hostname: 'extraction-coming-zoo-vegetarian.trycloudflare.com',
       },
       // 127.0.0.1
       {
