@@ -76,10 +76,10 @@ export const getAllOrder = async (page = 1, limit = 10, search = '', status = ''
     }
 }
 
-// get order by id
+// get order by id /massschuhe-order/admin-order/get/id
 export const getOrderById = async (id) => {
     try {
-        const response = await axiosClient.get(`/custom_shafts/get/${id}`);
+        const response = await axiosClient.get(`/massschuhe-order/admin-order/get/${id}`);
         return response.data;
     } catch (error) {
         throw new Error(error.response?.data?.message || error.message || 'Something went wrong');
@@ -88,9 +88,19 @@ export const getOrderById = async (id) => {
 
 
 // status change in products 
-export const statusChangeInOrder = async (id, status) => {
+export const statusChangeInOrder = async (id, status, allStatuses = []) => {
     try {
-        const response = await axiosClient.patch(`/custom_shafts/update-status/${id}`, { status });
+        const payload = {
+            status,
+            allStatuses: allStatuses.length > 0 ? allStatuses : [
+                'Bestellung_eingegangen',
+                'In_Produktiony',
+                'Qualitätskontrolle',
+                'Versandt',
+                'Ausgeführt'
+            ]
+        };
+        const response = await axiosClient.patch(`/custom_shafts/update-status/${id}`, payload);
         return response.data;
     } catch (error) {
         throw new Error(error.response?.data?.message || error.message || 'Something went wrong');

@@ -25,7 +25,7 @@ export const formatDateTime = (value) => {
 
 const statusConfig = {
     'Bestellung_eingegangen': { className: 'bg-blue-100 text-blue-800', label: 'Bestellung eingegangen' },
-    'In_Produktion': { className: 'bg-yellow-100 text-yellow-800', label: 'In Produktion' },
+    'In_Produktiony': { className: 'bg-yellow-100 text-yellow-800', label: 'In Produktion' },
     'Qualitätskontrolle': { className: 'bg-orange-100 text-orange-800', label: 'Qualitätskontrolle' },
     'Versandt': { className: 'bg-purple-100 text-purple-800', label: 'Versandt' },
     'Ausgeführt': { className: 'bg-green-100 text-green-800', label: 'Ausgeführt' }

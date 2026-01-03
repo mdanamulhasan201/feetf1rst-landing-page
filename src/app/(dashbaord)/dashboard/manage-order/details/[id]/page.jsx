@@ -6,6 +6,8 @@ import { Button } from '../../../../../../components/ui/button';
 import toast from 'react-hot-toast';
 import OrderHeader from '../../../../../../components/dashboard/OrderDetails/OrderHeader';
 import OrderCustomizationCard from '../../../../../../components/dashboard/OrderDetails/OrderCustomizationCard';
+import OrderBodenkonstruktionCard from '../../../../../../components/dashboard/OrderDetails/OrderBodenkonstruktionCard';
+import OrderHalbprobenerstellungCard from '../../../../../../components/dashboard/OrderDetails/OrderHalbprobenerstellungCard';
 import OrderContactCard from '../../../../../../components/dashboard/OrderDetails/OrderContactCard';
 import OrderPriceSummaryCard from '../../../../../../components/dashboard/OrderDetails/OrderPriceSummaryCard';
 import OrderStatusCard from '../../../../../../components/dashboard/OrderDetails/OrderStatusCard';
@@ -28,7 +30,7 @@ export default function OrderDetails() {
     // Status workflow configuration - using valid statuses from API
     const statusWorkflow = [
         { key: 'Bestellung_eingegangen', label: 'Bestellung eingegangen' },
-        { key: 'In_Produktion', label: 'In Produktion' },
+        { key: 'In_Produktiony', label: 'In Produktion' },
         { key: 'Qualitätskontrolle', label: 'Qualitätskontrolle' },
         { key: 'Versandt', label: 'Versandt' },
         { key: 'Ausgeführt', label: 'Ausgeführt' }
@@ -77,7 +79,10 @@ export default function OrderDetails() {
             setIsUpdatingStatus(true);
             setStatusError(null);
 
-            const response = await statusChangeInOrder(orderId, newStatus);
+            // Get all status keys from workflow
+            const allStatuses = statusWorkflow.map(status => status.key);
+            
+            const response = await statusChangeInOrder(orderId, newStatus, allStatuses);
 
             if (response.success) {
                 setCurrentStatus(newStatus);
@@ -140,6 +145,21 @@ export default function OrderDetails() {
     }
 
     const { customer, maßschaft_kollektion, partner, ...orderDetails } = order;
+    const category = orderDetails.catagoary || 'Massschafterstellung';
+    
+    // Calculate price based on category
+    let totalPrice = 0;
+    if (orderDetails.totalPrice !== null && orderDetails.totalPrice !== undefined) {
+        // For Halbprobenerstellung and Bodenkonstruktion, use direct totalPrice
+        totalPrice = Number(orderDetails.totalPrice) || 0;
+    } else {
+        // For Massschafterstellung, calculate from maßschaft_kollektion
+        const basePrice = Number(maßschaft_kollektion?.price) || 0;
+        const osenPrice = Number(orderDetails.osen_einsetzen_price) || 0;
+        const lacePrice = Number(orderDetails.Passenden_schnursenkel_price) || 0;
+        totalPrice = basePrice + osenPrice + lacePrice;
+    }
+
     const polsterungItems = parseListField(orderDetails.polsterung);
     const verstarkungItems = parseListField(orderDetails.vestarkungen || orderDetails.verstarkungen);
     const addonPrices = [
@@ -147,10 +167,6 @@ export default function OrderDetails() {
         { label: 'Passende Schnürsenkel', value: formatCurrencyValue(orderDetails.Passenden_schnursenkel_price) }
     ];
     const hasAddonSelection = addonPrices.some((item) => Boolean(item.value));
-    const basePrice = Number(maßschaft_kollektion?.price) || 0;
-    const osenPrice = Number(orderDetails.osen_einsetzen_price) || 0;
-    const lacePrice = Number(orderDetails.Passenden_schnursenkel_price) || 0;
-    const totalPrice = basePrice + osenPrice + lacePrice;
     const resolvedCustomerName = customer ? [customer?.vorname, customer?.nachname].filter(Boolean).join(' ').trim() : '';
     const fallbackCustomerName = customer?.customerNumber ? `Kunde #${customer.customerNumber}` : 'Unbekannter Kunde';
     const customerFullName = resolvedCustomerName || orderDetails.other_customer_number || fallbackCustomerName;
@@ -163,6 +179,7 @@ export default function OrderDetails() {
     const currentStatusInfo = statusWorkflow.find(status => status.key === currentStatus);
     const nextStatusInfo = getNextStatus();
 
+    // Prepare data based on category
     const customizationData = {
         lederType: getDisplayText(orderDetails.lederType),
         lederfarbe: getDisplayText(orderDetails.lederfarbe),
@@ -176,6 +193,54 @@ export default function OrderDetails() {
         verstarkungItems,
         verstarkungText: orderDetails.vestarkungen_text,
         addonOptions: addonPrices,
+        models: {
+            first: order.image3d_1,
+            second: order.image3d_2
+        }
+    };
+
+    // Bodenkonstruktion data
+    const bodenkonstruktionData = {
+        konstruktionsart: orderDetails.Konstruktionsart,
+        fersenkappe: orderDetails.Fersenkappe,
+        farbauswahl: orderDetails.Farbauswahl_Bodenkonstruktion,
+        sohlenmaterial: orderDetails.Sohlenmaterial,
+        absatzHoehe: orderDetails.Absatz_Höhe,
+        absatzForm: orderDetails.Absatz_Form,
+        abrollhilfe: orderDetails.Abrollhilfe_Rolle,
+        laufsohleProfil: orderDetails.Laufsohle_Profil_Art,
+        sohlenstaerke: orderDetails.Sohlenstärke,
+        besondereHinweise: orderDetails.Besondere_Hinweise,
+        models: {
+            first: order.image3d_1,
+            second: order.image3d_2
+        }
+    };
+
+    // Halbprobenerstellung data
+    const halbprobenerstellungData = {
+        bettungsdicke: orderDetails.Bettungsdicke,
+        haertegradShore: orderDetails.Haertegrad_Shore,
+        fersenschale: orderDetails.Fersenschale,
+        laengsgewoelbestuetze: orderDetails.Laengsgewölbestütze,
+        palotteOderQuerpalotte: orderDetails.Palotte_oder_Querpalotte,
+        korrekturDerFussstellung: orderDetails.Korrektur_der_Fußstellung,
+        zehenelementeDetails: orderDetails.Zehenelemente_Details,
+        eineKorrekturNoetigIst: orderDetails.eine_korrektur_nötig_ist,
+        speziellesFussproblem: orderDetails.Spezielles_Fußproblem,
+        zusatzkorrekturAbsatzerhoehung: orderDetails.Zusatzkorrektur_Absatzerhöhung,
+        vertiefungenAussparungen: orderDetails.Vertiefungen_Aussparungen,
+        oberflaecheFinish: orderDetails.Oberfläche_finish,
+        ueberzugStaerke: orderDetails.Überzug_Stärke,
+        anmerkungenZurBettung: orderDetails.Anmerkungen_zur_Bettung,
+        leistenMitOhnePlatzhalter: orderDetails.Leisten_mit_ohne_Platzhalter,
+        schuhleistenTyp: orderDetails.Schuhleisten_Typ,
+        materialDesLeisten: orderDetails.Material_des_Leisten,
+        leistenGleicheLaenge: orderDetails.Leisten_gleiche_Länge,
+        absatzhoehe: orderDetails.Absatzhöhe,
+        abrollhilfe: orderDetails.Abrollhilfe,
+        spezielleFussproblemeLeisten: orderDetails.Spezielle_Fußprobleme_Leisten,
+        anmerkungenZumLeisten: orderDetails.Anmerkungen_zum_Leisten,
         models: {
             first: order.image3d_1,
             second: order.image3d_2
@@ -196,9 +261,10 @@ export default function OrderDetails() {
         ? `${maßschaft_kollektion.catagoary}${maßschaft_kollektion?.gender ? ` · ${maßschaft_kollektion.gender}` : ''}`
         : maßschaft_kollektion?.gender || '';
 
+    const basePrice = Number(maßschaft_kollektion?.price) || 0;
     const priceSummary = {
-        collectionName: maßschaft_kollektion?.name,
-        collectionMeta,
+        collectionName: maßschaft_kollektion?.name || category,
+        collectionMeta: category !== 'Massschafterstellung' ? category : collectionMeta,
         basePrice: formatCurrencyValue(basePrice),
         addons: addonPrices,
         totalPrice: formatCurrencyValue(totalPrice),
@@ -223,7 +289,16 @@ export default function OrderDetails() {
             <OrderHeader order={order} onBack={() => router.back()} />
 
             <div className="flex flex-col gap-4">
-                <OrderCustomizationCard data={customizationData} />
+                {/* Render customization card based on category */}
+                {category === 'Bodenkonstruktion' && (
+                    <OrderBodenkonstruktionCard data={bodenkonstruktionData} />
+                )}
+                {category === 'Halbprobenerstellung' && (
+                    <OrderHalbprobenerstellungCard data={halbprobenerstellungData} />
+                )}
+                {category === 'Massschafterstellung' && (
+                    <OrderCustomizationCard data={customizationData} />
+                )}
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                     <OrderContactCard contactInfo={contactInfo} />

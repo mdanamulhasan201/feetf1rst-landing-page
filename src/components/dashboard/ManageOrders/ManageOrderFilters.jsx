@@ -53,7 +53,7 @@ const ManageOrderFilters = ({
                     <SelectContent>
                         <SelectItem value="all">Alle Status</SelectItem>
                         <SelectItem value="Bestellung_eingegangen">Bestellung eingegangen</SelectItem>
-                        <SelectItem value="In_Produktion">In Produktion</SelectItem>
+                        <SelectItem value="In_Produktiony">In Produktion</SelectItem>
                         <SelectItem value="Qualitätskontrolle">Qualitätskontrolle</SelectItem>
                         <SelectItem value="Versandt">Versandt</SelectItem>
                         <SelectItem value="Ausgeführt">Ausgeführt</SelectItem>
