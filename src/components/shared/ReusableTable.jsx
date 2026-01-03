@@ -26,15 +26,16 @@ import TablePagination from './TablePagination'
  * @param {boolean} props.showPagination - Whether to show pagination (default: true)
  * @param {string} props.tableClassName - Additional classes for table
  * @param {string} props.containerClassName - Additional classes for container
+ * @param {number} props.minTableWidth - Minimum width for table in pixels (default: 1200)
  */
 // Shimmer skeleton component for table rows
 const TableRowSkeleton = ({ columns, columnWidth }) => {
     return (
-        <TableRow className="hover:bg-gray-50 w-full h-[57px]">
+        <TableRow className="hover:bg-gray-50 h-[57px]">
             {columns.map((column, colIndex) => (
                 <TableCell
                     key={colIndex}
-                    className={`px-2 py-3 h-[57px] ${column.align === 'center' ? 'text-center' : column.align === 'right' ? 'text-right' : ''}`}
+                    className={`px-3 py-3 h-[57px] ${column.align === 'center' ? 'text-center' : column.align === 'right' ? 'text-right' : ''}`}
                 >
                     <div className="h-5 bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 rounded animate-shimmer bg-[length:200%_100%]" 
                          style={{ 
@@ -59,7 +60,8 @@ export default function ReusableTable({
     showPagination = true,
     tableClassName = "",
     containerClassName = "",
-    skeletonRows = null // If null, will use pagination.itemsPerPage
+    skeletonRows = null, // If null, will use pagination.itemsPerPage
+    minTableWidth = 1200 // Minimum width in pixels to maintain table width and enable horizontal scroll
 }) {
     // Calculate column widths if not provided
     const columnCount = columns.length
@@ -76,26 +78,36 @@ export default function ReusableTable({
 
     return (
         <div className={`bg-white rounded-lg border border-gray-200 overflow-hidden w-full ${containerClassName}`}>
-            <div className="overflow-x-auto overflow-y-visible -mx-1">
-                <div className="inline-block min-w-full align-middle">
-                    <Table 
-                        className={`w-full table-fixed border-collapse ${tableClassName}`} 
-                        style={{ tableLayout: 'fixed', width: '100%', minWidth: '900px', borderSpacing: 0 }}
-                    >
+            <div className="w-full overflow-x-auto">
+                <Table 
+                    className={`border-collapse ${tableClassName}`} 
+                    style={{ tableLayout: 'fixed', width: '100%', minWidth: `${minTableWidth}px`, borderSpacing: 0 }}
+                >
                     <colgroup>
-                        {columns.map((col, index) => (
-                            <col 
-                                key={index} 
-                                style={{ width: col.width || columnWidth }} 
-                            />
-                        ))}
+                        {columns.map((col, index) => {
+                            const colStyle = { width: col.width || 'auto' };
+                            if (col.minWidth) {
+                                colStyle.minWidth = col.minWidth;
+                            }
+                            return (
+                                <col 
+                                    key={index} 
+                                    style={colStyle} 
+                                />
+                            );
+                        })}
                     </colgroup>
-                    <TableHeader className="w-full">
-                        <TableRow className="bg-gray-50 w-full">
+                    <TableHeader>
+                        <TableRow className="bg-gray-50">
                             {columns.map((column, index) => (
                                 <TableHead
                                     key={index}
-                                    className={`font-semibold text-gray-700 px-3 py-3 whitespace-nowrap ${column.headerClassName || ''} ${column.align === 'center' ? 'text-center' : column.align === 'right' ? 'text-right' : ''}`}
+                                    className={`font-semibold text-gray-700 px-3 py-3 ${column.headerClassName || ''} ${column.align === 'center' ? 'text-center' : column.align === 'right' ? 'text-right' : ''}`}
+                                    style={{ 
+                                        whiteSpace: 'nowrap',
+                                        overflow: 'hidden',
+                                        textOverflow: 'ellipsis'
+                                    }}
                                 >
                                     {column.header}
                                 </TableHead>
@@ -121,7 +133,7 @@ export default function ReusableTable({
                             data.map((row, rowIndex) => (
                                 <TableRow 
                                     key={row.id || rowIndex} 
-                                    className="hover:bg-gray-50 w-full h-[57px]"
+                                    className="hover:bg-gray-50 h-[57px]"
                                 >
                                     {columns.map((column, colIndex) => {
                                         // Get cell content
@@ -152,7 +164,13 @@ export default function ReusableTable({
                                         return (
                                             <TableCell
                                                 key={colIndex}
-                                                className={`px-3 py-3 whitespace-nowrap ${column.cellClassName || ''} ${column.align === 'center' ? 'text-center' : column.align === 'right' ? 'text-right' : ''}`}
+                                                className={`px-3 py-3 ${column.cellClassName || ''} ${column.align === 'center' ? 'text-center' : column.align === 'right' ? 'text-right' : ''}`}
+                                                style={{ 
+                                                    whiteSpace: column.nowrap !== false ? 'nowrap' : 'normal',
+                                                    overflow: column.nowrap !== false ? 'hidden' : 'visible',
+                                                    textOverflow: column.nowrap !== false ? 'ellipsis' : 'clip',
+                                                    wordBreak: column.nowrap === false ? 'break-word' : 'normal'
+                                                }}
                                             >
                                                 {cellContent}
                                             </TableCell>
@@ -163,7 +181,6 @@ export default function ReusableTable({
                         )}
                     </TableBody>
                     </Table>
-                </div>
             </div>
 
             {/* Pagination */}

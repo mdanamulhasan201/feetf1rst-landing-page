@@ -40,9 +40,9 @@ const ManageOrderFilters = ({
                     </SelectTrigger>
                     <SelectContent>
                         <SelectItem value="all">Alle Kategorien</SelectItem>
-                        <SelectItem value="massschaft">Massschaft</SelectItem>
-                        <SelectItem value="shoes">Schuhe</SelectItem>
-                        <SelectItem value="ski">Ski</SelectItem>
+                        <SelectItem value="Halbprobenerstellung">Halbprobenerstellung</SelectItem>
+                        <SelectItem value="Massschafterstellung">Massschafterstellung</SelectItem>
+                        <SelectItem value="Bodenkonstruktion">Bodenkonstruktion</SelectItem>
                     </SelectContent>
                 </Select>
 

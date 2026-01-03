@@ -54,10 +54,22 @@ export const deleteProduct = async (id) => {
 }
 
 
-// get all order 
-export const getAllOrder = async (page = number, limit = number, search = string, status = string) => {
+// get all order  massschuhe-order/admin-order/get?catagoary=&page=1&limit=1
+export const getAllOrder = async (page = 1, limit = 10, search = '', status = '', category = '') => {
     try {
-        const response = await axiosClient.get(`/custom_shafts/get?page=${page}&limit=${limit}&search=${search}&status=${status}`);
+        const params = new URLSearchParams();
+        if (category && category !== 'all') {
+            params.append('catagoary', category);
+        }
+        params.append('page', page.toString());
+        params.append('limit', limit.toString());
+        if (search) {
+            params.append('search', search);
+        }
+        if (status) {
+            params.append('status', status);
+        }
+        const response = await axiosClient.get(`/massschuhe-order/admin-order/get?${params.toString()}`);
         return response.data;
     } catch (error) {
         throw new Error(error.response?.data?.message || error.message || 'Something went wrong');

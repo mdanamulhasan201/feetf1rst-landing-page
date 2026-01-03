@@ -37,6 +37,15 @@ export const getStatusBadge = (status = 'Bestellung_eingegangen') => {
 };
 
 export const calculateTotalPrice = (order) => {
+    // If totalPrice exists directly (for Halbprobenerstellung and Bodenkonstruktion), use it
+    if (order?.totalPrice !== null && order?.totalPrice !== undefined) {
+        const directPrice = Number(order.totalPrice) || 0;
+        if (directPrice > 0) {
+            return directPrice;
+        }
+    }
+    
+    // Otherwise calculate from maßschaft_kollektion (for Massschafterstellung)
     const basePrice = Number(order?.maßschaft_kollektion?.price) || 0;
     const osenPrice = Number(order?.osen_einsetzen_price) || 0;
     const lacePrice = Number(order?.Passenden_schnursenkel_price) || 0;

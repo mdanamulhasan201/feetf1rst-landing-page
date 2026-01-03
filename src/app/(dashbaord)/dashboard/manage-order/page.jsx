@@ -48,7 +48,7 @@ export default function ManageOrder() {
         router.replace(`/dashboard/manage-order${newURL}`, { scroll: false });
     };
 
-    const fetchOrders = async (page = 1, search = '', status = '') => {
+    const fetchOrders = async (page = 1, search = '', status = '', category = '') => {
         try {
             // Show search loading only if it's a search operation (not initial load)
             if (search && search !== '') {
@@ -57,7 +57,7 @@ export default function ManageOrder() {
                 setLoading(true);
             }
 
-            const response = await getAllOrder(page, limit, search, status);
+            const response = await getAllOrder(page, limit, search, status, category);
             setOrders(response.data || []);
             setPagination(response.pagination || {});
             setTotalPages(response.pagination?.totalPages || 1);
@@ -71,11 +71,12 @@ export default function ManageOrder() {
     };
 
     useEffect(() => {
-        fetchOrders(currentPage, debouncedSearchTerm, selectedStatus === 'all' ? '' : selectedStatus);
+        const category = selectedCategory === 'all' ? '' : selectedCategory;
+        fetchOrders(currentPage, debouncedSearchTerm, selectedStatus === 'all' ? '' : selectedStatus, category);
         updateURL(debouncedSearchTerm, currentPage);
-    }, [currentPage, debouncedSearchTerm, selectedStatus]);
+    }, [currentPage, debouncedSearchTerm, selectedStatus, selectedCategory]);
 
-    // Reset to first page when search term or status changes
+    // Reset to first page when search term, status, or category changes
     useEffect(() => {
         if (debouncedSearchTerm !== searchTerm && debouncedSearchTerm !== '') {
             setCurrentPage(1);
@@ -84,7 +85,7 @@ export default function ManageOrder() {
 
     useEffect(() => {
         setCurrentPage(1);
-    }, [selectedStatus]);
+    }, [selectedStatus, selectedCategory]);
 
     // Handle URL changes on page load
     useEffect(() => {
@@ -167,7 +168,8 @@ export default function ManageOrder() {
                     <p>Error loading orders: {error}</p>
                     <Button onClick={() => {
                         setError(null);
-                        fetchOrders(currentPage, debouncedSearchTerm);
+                        const category = selectedCategory === 'all' ? '' : selectedCategory;
+                        fetchOrders(currentPage, debouncedSearchTerm, selectedStatus === 'all' ? '' : selectedStatus, category);
                     }} className="mt-4 cursor-pointer">
                         Try Again
                     </Button>
@@ -178,7 +180,7 @@ export default function ManageOrder() {
 
     return (
         <>
-            <div className="p-6">
+            <div className="p-6 w-full">
                 <ManageOrderHeader />
 
                 <ManageOrderFilters

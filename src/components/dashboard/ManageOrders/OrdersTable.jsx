@@ -20,8 +20,9 @@ const OrdersTable = ({
                 {
                     header: 'Bestellnummer',
                     accessor: (order) => order?.orderNumber || 'N/A',
-                    width: '12%',
-                    cellClassName: 'font-mono text-sm font-medium'
+                    width: '11%',
+                    cellClassName: 'font-mono text-sm font-medium',
+                    nowrap: true
                 },
                 {
                     header: 'Partnergeschäft',
@@ -38,31 +39,36 @@ const OrdersTable = ({
                             </div>
                         );
                     },
-                    width: '18%'
+                    width: '17%',
+                    nowrap: false
                 },
                 {
                     header: 'Kategorie',
                     accessor: (order) => {
-                        const category = order.maßschaft_kollektion?.catagoary || 'Massschaft';
+                        // Category comes directly from order.catagoary, not from maßschaft_kollektion
+                        const category = order?.catagoary || 'N/A';
                         return (
                             <Badge variant="secondary" className="bg-gray-100 text-gray-700">
                                 {category}
                             </Badge>
                         );
                     },
-                    width: '12%'
+                    width: '14%',
+                    nowrap: true
                 },
                 {
                     header: 'Modell',
                     accessor: (order) => {
-                        const modelName = order.maßschaft_kollektion?.name || 'N/A';
+                        // Model name only exists for Massschafterstellung category
+                        const modelName = order?.maßschaft_kollektion?.name || 'N/A';
                         return (
                             <p className="font-medium text-gray-800">
                                 {modelName}
                             </p>
                         );
                     },
-                    width: '15%'
+                    width: '14%',
+                    nowrap: false
                 },
                 {
                     header: 'Preis',
@@ -82,12 +88,14 @@ const OrdersTable = ({
                             </>
                         );
                     },
-                    width: '12%'
+                    width: '11%',
+                    nowrap: true
                 },
                 {
                     header: 'Status',
                     accessor: (order) => getStatusBadge(order?.status),
-                    width: '12%'
+                    width: '12%',
+                    nowrap: true
                 },
                 {
                     header: 'Datum',
@@ -96,7 +104,8 @@ const OrdersTable = ({
                             {formatDateTime(order.createdAt)}
                         </p>
                     ),
-                    width: '12%'
+                    width: '10%',
+                    nowrap: true
                 },
                 {
                     header: 'Aktionen',
@@ -121,7 +130,8 @@ const OrdersTable = ({
                             </button>
                         </div>
                     ),
-                    width: '8%'
+                    width: '10%',
+                    nowrap: true
                 }
             ]}
             data={orders}
