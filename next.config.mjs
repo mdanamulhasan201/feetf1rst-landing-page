@@ -23,7 +23,7 @@ const nextConfig = {
 
       {
         protocol: 'https',
-        hostname: 'extraction-coming-zoo-vegetarian.trycloudflare.com',
+        hostname: 'blackberry-allocated-joan-glad.trycloudflare.com',
       },
       // 127.0.0.1
       {
