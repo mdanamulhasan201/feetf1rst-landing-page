@@ -23,7 +23,7 @@ const nextConfig = {
 
       {
         protocol: 'https',
-        hostname: 'calgary-parade-raw-eye.trycloudflare.com',
+        hostname: 'rpg-happened-houston-national.trycloudflare.com',
       },
       // 127.0.0.1
       {
