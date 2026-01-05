@@ -23,7 +23,7 @@ const nextConfig = {
 
       {
         protocol: 'https',
-        hostname: 'blackberry-allocated-joan-glad.trycloudflare.com',
+        hostname: 'calgary-parade-raw-eye.trycloudflare.com',
       },
       // 127.0.0.1
       {

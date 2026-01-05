@@ -28,7 +28,7 @@
     ".next/types/**/*.ts",
     "**/*.ts",
     "**/*.tsx"
-, "src/app/(dashbaord)/dashboard/upload-product/page.jsx", "src/app/(dashbaord)/dashboard/add-products/page.jsx"  ],
+, "src/app/(dashbaord)/dashboard/upload-product/page.jsx", "src/app/(dashbaord)/dashboard/add-products/page.jsx", "src/app/(dashbaord)/dashboard/store-management/page.jsx"  ],
   "exclude": [
     "node_modules"
   ]

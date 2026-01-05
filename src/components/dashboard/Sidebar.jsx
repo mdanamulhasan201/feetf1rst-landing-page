@@ -5,7 +5,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import { IoClose } from 'react-icons/io5'
 import { HiPencilAlt, HiCollection, HiCog, HiArrowRightOnRectangle, HiDocumentText, HiUserGroup, HiCube } from 'react-icons/hi'
 import { useAuth } from '../../context/AuthContext'
-import { Image, Upload, UserPlus } from 'lucide-react'
+import { Image, Store, Upload, UserPlus } from 'lucide-react'
 import { MdProductionQuantityLimits } from "react-icons/md";
 // import toast from 'react-hot-toast'
 
@@ -25,6 +25,7 @@ export default function Sidebar({ onClose }) {
         { icon: HiUserGroup, label: 'Role Management', href: '/dashboard/role-management' },
         { icon: HiCube, label: 'Software Management', href: '/dashboard/software-management' },
         { icon: HiDocumentText, label: 'Suggestions', href: '/dashboard/suggestions' },
+        { icon: Store, label: 'Store Management', href: '/dashboard/store-management' },
     ];
 
     const handleLogout = () => {
