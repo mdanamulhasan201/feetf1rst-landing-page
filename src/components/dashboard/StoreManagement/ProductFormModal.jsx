@@ -36,7 +36,6 @@ export default function ProductFormModal({ productData, onSuccess, loadProductFo
     const [imagePreview, setImagePreview] = useState(null)
     const [imageFile, setImageFile] = useState(null)
     const [formData, setFormData] = useState(initialFormData)
-    const [bulkUpdateValue, setBulkUpdateValue] = useState('')
 
     // Load product data when editing
     useEffect(() => {
@@ -76,7 +75,6 @@ export default function ProductFormModal({ productData, onSuccess, loadProductFo
             setFormData(initialFormData)
             setImagePreview(null)
             setImageFile(null)
-            setBulkUpdateValue('')
             setIsLoadingProduct(false)
         }
     }, [isModalOpen, isEditMode, editingProductId, loadProductForEdit])
@@ -112,29 +110,6 @@ export default function ProductFormModal({ productData, onSuccess, loadProductFo
     const handleRemoveImage = () => {
         setImageFile(null)
         setImagePreview(null)
-    }
-
-    const handleBulkUpdate = () => {
-        const increment = parseInt(bulkUpdateValue) || 0
-        if (increment === 0) {
-            toast.error('Bitte geben Sie eine gültige Anzahl ein')
-            return
-        }
-
-        setFormData(prev => {
-            const updatedGroessenMengen = { ...prev.groessenMengen }
-            Object.keys(updatedGroessenMengen).forEach(size => {
-                const currentQuantity = parseInt(updatedGroessenMengen[size].quantity) || 0
-                updatedGroessenMengen[size].quantity = (currentQuantity + increment).toString()
-            })
-            return {
-                ...prev,
-                groessenMengen: updatedGroessenMengen
-            }
-        })
-
-        setBulkUpdateValue('')
-        toast.success(`Alle Größen um ${increment} erhöht`)
     }
 
     const handleSubmit = async (e) => {
@@ -357,38 +332,7 @@ export default function ProductFormModal({ productData, onSuccess, loadProductFo
                                 </div>
                             </div>
 
-                            {/* Bulk Update Section */}
-                            <div className="space-y-4 border-t pt-4">
-                                <h3 className="text-lg font-semibold text-gray-800">Massenaktualisierung</h3>
-                                <div className="flex items-center gap-3">
-                                    <Label htmlFor="bulkUpdate" className="whitespace-nowrap">
-                                        Alle Größen um X erhöhen
-                                    </Label>
-                                    <Input
-                                        id="bulkUpdate"
-                                        type="number"
-                                        placeholder="Anzahl eingeben..."
-                                        value={bulkUpdateValue}
-                                        onChange={(e) => setBulkUpdateValue(e.target.value)}
-                                        className="w-48"
-                                        disabled={isLoadingProduct}
-                                    />
-                                    <Button
-                                        type="button"
-                                        onClick={handleBulkUpdate}
-                                        className="bg-green-600 hover:bg-green-700 text-white"
-                                        disabled={isLoadingProduct}
-                                    >
-                                        Hinzufügen
-                                    </Button>
-                                </div>
-                            </div>
-
-                            <SizesTable
-                                formData={formData}
-                                onSizeFieldChange={handleSizeFieldChange}
-                                disabled={isLoadingProduct}
-                            />
+                            <SizesTable />
 
                             <div className="flex justify-end gap-3 pt-4 border-t">
                                 <Button
