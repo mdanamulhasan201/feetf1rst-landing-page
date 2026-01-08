@@ -14,6 +14,23 @@ import SizesTable from './SizesTable'
 
 const defaultSizes = ['35', '36', '37', '38', '39', '40', '41', '42', '43', '44', '45', '46', '47', '48']
 
+const defaultLengths = {
+    '35': '225',
+    '36': '230',
+    '37': '235',
+    '38': '240',
+    '39': '245',
+    '40': '250',
+    '41': '255',
+    '42': '260',
+    '43': '265',
+    '44': '270',
+    '45': '275',
+    '46': '280',
+    '47': '285',
+    '48': '290'
+}
+
 const initialFormData = {
     productName: '',
     brand: '',
@@ -22,11 +39,38 @@ const initialFormData = {
     eigenschaften: '',
     groessenMengen: defaultSizes.reduce((acc, size) => {
         acc[size] = {
-            length: '',
+            length: defaultLengths[size] || '',
             quantity: '0'
         }
         return acc
     }, {})
+}
+
+// Normalize product image URL so Next/Image always gets a valid src
+const getProductImageUrl = (image) => {
+    if (!image || typeof image !== 'string') return null
+
+    // If it's already absolute URL, use as-is
+    if (image.startsWith('http://') || image.startsWith('https://')) {
+        return image
+    }
+
+    // If it's a root-relative path, use as-is
+    if (image.startsWith('/')) {
+        return image
+    }
+
+    // If it's just a filename, construct the full URL using the API endpoint
+    const apiEndpoint = process.env.NEXT_PUBLIC_API_ENDPOINT
+    if (apiEndpoint) {
+        // Remove trailing slash from API endpoint if present
+        const baseUrl = apiEndpoint.replace(/\/$/, '')
+        // Construct the image URL (assuming images are served from /uploads or similar)
+        return `${baseUrl}/uploads/${image}`
+    }
+
+    // Fallback: return null to show placeholder
+    return null
 }
 
 export default function ProductFormModal({ productData, onSuccess, loadProductForEdit }) {
@@ -60,7 +104,10 @@ export default function ProductFormModal({ productData, onSuccess, loadProductFo
                             }, {}) : initialFormData.groessenMengen
                         })
                         if (product.image) {
-                            setImagePreview(product.image)
+                            const normalizedImageUrl = getProductImageUrl(product.image)
+                            if (normalizedImageUrl) {
+                                setImagePreview(normalizedImageUrl)
+                            }
                         }
                     }
                 } catch (error) {

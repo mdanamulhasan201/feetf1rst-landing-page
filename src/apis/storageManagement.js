@@ -4,11 +4,7 @@ import axiosClient from "../../lip/axiosClient";
 // create store product - manually add product to store
 export const createStoreProduct = async (productData) => {
     try {
-        const response = await axiosClient.post('/store/admin-store/create', productData, {
-            headers: {
-                'Content-Type': 'multipart/form-data',
-            },
-        });
+        const response = await axiosClient.post('/store/admin-store/create', productData);
         if (response.data && response.data.success) {
             return {
                 success: true,
@@ -48,11 +44,7 @@ export const getAllStoreProducts = async (page = 1, limit = 10, search = '') => 
 // update store product store/admin-store/update/0806bd81-568c-4657-9e2f-cb3bc6581f8f
 export const updateStoreProduct = async (id, productData) => {
     try {
-        const response = await axiosClient.patch(`/store/admin-store/update/${id}`, productData, {
-            headers: {
-                'Content-Type': 'multipart/form-data',
-            },
-        });
+        const response = await axiosClient.patch(`/store/admin-store/update/${id}`, productData);
         if (response.data && response.data.success) {
             return {
                 success: true,
