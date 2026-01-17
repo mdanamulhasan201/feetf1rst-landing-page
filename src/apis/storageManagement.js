@@ -140,3 +140,67 @@ export const getTotalPrice = async () => {
         throw new Error(error.response?.data?.message || error.message || 'Something went wrong');
     }
 }
+
+
+
+// brand store/admin-store/search-brand-store?page=1&limit=2&search=a
+export const searchBrandStore = async (page = 1, limit = 10, search = '') => {
+    try {
+        const response = await axiosClient.get(`/store/admin-store/search-brand-store?page=${page}&limit=${limit}&search=${search}`);
+        if (response.data && response.data.success) {
+            return {
+                success: true,
+                data: response.data.data,
+                pagination: response.data.pagination,
+            };
+        }
+        return {
+            success: false,
+            message: response.data.message || 'Failed to search brand store',
+        };
+    } catch (error) {
+        throw new Error(error.response?.data?.message || error.message || 'Something went wrong');
+    }
+}
+
+
+// get brand info  store/admin-store/get-brand-store/e194b25b-b4e1-4a86-8c8f-c6789c935c90
+export const getBrandInfo = async (id) => {
+    try {
+        const response = await axiosClient.get(`/store/admin-store/get-brand-store/${id}`);
+        if (response.data && response.data.success) {
+            return {
+                success: true,
+                data: response.data.data,
+            };
+        }
+        return {
+            success: false,
+            message: response.data.message || 'Failed to get brand info',
+        };
+    } catch (error) {
+        throw new Error(error.response?.data?.message || error.message || 'Something went wrong');
+    }
+}
+
+
+// update brand info store/admin-store/update-brand-store/e194b25b-b4e1-4a86-8c8f-c6789c935c90
+
+export const updateBrandInfo = async (id, brandData) => {
+    try {
+        const response = await axiosClient.patch(`/store/admin-store/update-brand-store/${id}`, brandData);
+        if (response.data && response.data.success) {
+            return {
+                success: true,
+                message: response.data.message,
+                data: response.data.data,
+            };
+        }
+        return {
+            success: false,
+            message: response.data.message || 'Failed to update brand info',
+        };
+    } catch (error) {
+        throw new Error(error.response?.data?.message || error.message || 'Something went wrong');
+    }
+}

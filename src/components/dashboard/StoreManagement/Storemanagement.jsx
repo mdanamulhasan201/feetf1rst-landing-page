@@ -21,6 +21,7 @@ export default function Storemanagement() {
         pagination,
         handlePageChange,
         refreshProducts,
+        addProductOptimistically,
         handleDelete,
         loadProductForEdit,
     } = useStoreProducts()
@@ -77,7 +78,15 @@ export default function Storemanagement() {
             </Card>
 
             <ProductFormModal
-                onSuccess={refreshProducts}
+                onSuccess={(productData) => {
+                    // Optimistic update: show new product immediately
+                    if (productData) {
+                        addProductOptimistically(productData)
+                    } else {
+                        // Fallback: refresh if no product data provided
+                        refreshProducts()
+                    }
+                }}
                 loadProductForEdit={loadProductForEdit}
             />
 

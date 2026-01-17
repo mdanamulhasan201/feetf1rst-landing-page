@@ -17,14 +17,15 @@ export default function SizesTable({ formData, onSizeFieldChange, disabled = fal
         <div>
             <div className="border rounded-lg overflow-hidden bg-white">
                 <div className="bg-gray-50 border-b">
-                    <div className="grid grid-cols-2 gap-2 px-3 py-2">
+                    <div className="grid grid-cols-3 gap-2 px-3 py-2">
                         <div className="text-sm font-semibold text-gray-700">Größe</div>
-                        <div className="text-sm font-semibold text-gray-700">Länge (cm)</div>
+                        <div className="text-sm font-semibold text-gray-700">Länge (mm)</div>
+                        <div className="text-sm font-semibold text-gray-700">Menge</div>
                     </div>
                 </div>
                 <div className="divide-y">
                     {defaultSizes.map((euSize) => (
-                        <div key={euSize} className="grid grid-cols-2 gap-2 px-3 py-2 hover:bg-gray-50 transition-colors">
+                        <div key={euSize} className="grid grid-cols-3 gap-2 px-3 py-2 hover:bg-gray-50 transition-colors">
                             <div className="flex items-center font-medium text-gray-700">
                                 {getDisplaySize(euSize)}
                             </div>
@@ -36,6 +37,18 @@ export default function SizesTable({ formData, onSizeFieldChange, disabled = fal
                                     placeholder="z.B. 225"
                                     value={formData.groessenMengen[euSize]?.length || ''}
                                     onChange={(e) => onSizeFieldChange(euSize, 'length', e.target.value)}
+                                    className="h-8 text-sm"
+                                    disabled={disabled}
+                                />
+                            </div>
+                            <div>
+                                <Input
+                                    type="number"
+                                    step="1"
+                                    min="0"
+                                    placeholder="z.B. 5"
+                                    value={formData.groessenMengen[euSize]?.quantity || '0'}
+                                    onChange={(e) => onSizeFieldChange(euSize, 'quantity', e.target.value)}
                                     className="h-8 text-sm"
                                     disabled={disabled}
                                 />

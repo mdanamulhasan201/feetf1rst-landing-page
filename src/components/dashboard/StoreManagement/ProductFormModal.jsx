@@ -11,6 +11,8 @@ import { createStoreProduct, updateStoreProduct } from '../../../apis/storageMan
 import toast from 'react-hot-toast'
 import Image from 'next/image'
 import SizesTable from './SizesTable'
+import BrandInfoModal from './BrandInfoModal'
+import BrandSearchInput from './BrandSearchInput'
 
 const defaultSizes = ['35', '36', '37', '38', '39', '40', '41', '42', '43', '44', '45', '46', '47', '48']
 
@@ -99,6 +101,10 @@ export default function ProductFormModal({ onSuccess, loadProductForEdit }) {
     const [imageFile, setImageFile] = useState(null)
     const [formData, setFormData] = useState(initialFormData)
     const [sizeFormat, setSizeFormat] = useState('EU') // 'EU' or 'US'
+    
+    // Brand info modal states
+    const [isBrandInfoModalOpen, setIsBrandInfoModalOpen] = useState(false)
+    const [brandInfoData, setBrandInfoData] = useState(null)
 
     // Load product data when editing
     useEffect(() => {
@@ -108,9 +114,10 @@ export default function ProductFormModal({ onSuccess, loadProductForEdit }) {
                 try {
                     const product = await loadProductForEdit(editingProductId)
                     if (product) {
+                        const brandValue = product.brand || ''
                         setFormData({
                             productName: product.productName || '',
-                            brand: product.brand || '',
+                            brand: brandValue,
                             artikelnummer: product.artikelnummer || '',
                             price: product.price?.toString() || '0',
                             eigenschaften: product.eigenschaften || '',
@@ -163,6 +170,47 @@ export default function ProductFormModal({ onSuccess, loadProductForEdit }) {
                 }
             }
         }))
+    }
+
+    // Handle brand selection from BrandSearchInput
+    const handleBrandSelect = (brandData) => {
+        if (brandData) {
+            setBrandInfoData(brandData)
+            setIsBrandInfoModalOpen(true)
+        }
+    }
+
+    // Handle brand input change
+    const handleBrandChange = (value) => {
+        handleInputChange('brand', value)
+    }
+
+    // Apply brand info to form (called from BrandInfoModal)
+    const handleApplyBrandInfo = (groessenMengen) => {
+        if (groessenMengen) {
+            // Merge with existing data, ensuring all sizes are included
+            const mergedGroessenMengen = defaultSizes.reduce((acc, size) => {
+                if (groessenMengen[size]) {
+                    acc[size] = {
+                        length: groessenMengen[size].length?.toString() || '',
+                        quantity: groessenMengen[size].quantity?.toString() || '0'
+                    }
+                } else {
+                    // Keep existing data or use defaults
+                    acc[size] = {
+                        length: defaultLengths[size] || '',
+                        quantity: '0'
+                    }
+                }
+                return acc
+            }, {})
+            
+            setFormData(prev => ({
+                ...prev,
+                groessenMengen: mergedGroessenMengen
+            }))
+            
+        }
     }
 
     const handleImageUpload = (e) => {
@@ -228,7 +276,14 @@ export default function ProductFormModal({ onSuccess, loadProductForEdit }) {
                 setImageFile(null)
                 setImagePreview(null)
                 closeModal()
-                if (onSuccess) onSuccess()
+                if (onSuccess) {
+                    // Pass the created/updated product data for optimistic update
+                    if (response.data) {
+                        onSuccess(response.data)
+                    } else {
+                        onSuccess()
+                    }
+                }
             } else {
                 toast.error(response.message || 'Fehler beim Speichern des Produkts')
             }
@@ -242,13 +297,21 @@ export default function ProductFormModal({ onSuccess, loadProductForEdit }) {
 
     if (!isModalOpen) return null
 
+    const handleOverlayClick = (e) => {
+        // Don't close if BrandInfoModal is open
+        if (isBrandInfoModalOpen) {
+            return
+        }
+        closeModal()
+    }
+
     return (
         <div 
             className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
-            onClick={closeModal}
+            onClick={handleOverlayClick}
         >
             <Card 
-                className="w-full max-w-6xl max-h-[90vh] overflow-y-auto bg-white"
+                className="w-full !max-w-4xl max-h-[90vh] overflow-y-auto bg-white"
                 onClick={(e) => e.stopPropagation()}
             >
                 <CardHeader className="flex flex-row items-center justify-between border-b pb-4">
@@ -291,19 +354,13 @@ export default function ProductFormModal({ onSuccess, loadProductForEdit }) {
                                         />
                                     </div>
 
-                                    <div className="space-y-2">
-                                        <Label htmlFor="brand">Hersteller</Label>
-                                        <Input
-                                            id="brand"
-                                            type="text"
-                                            placeholder="Hersteller eingeben"
-                                            value={formData.brand}
-                                            onChange={(e) => handleInputChange('brand', e.target.value)}
-                                            className="w-full"
-                                            required
-                                            disabled={isLoadingProduct}
-                                        />
-                                    </div>
+                                    <BrandSearchInput
+                                        value={formData.brand}
+                                        onChange={handleBrandChange}
+                                        onBrandSelect={handleBrandSelect}
+                                        disabled={isLoadingProduct}
+                                        required
+                                    />
                                 </div>
 
                                 <div className="space-y-2">
@@ -478,6 +535,15 @@ export default function ProductFormModal({ onSuccess, loadProductForEdit }) {
                     )}
                 </CardContent>
             </Card>
+
+            {/* Brand Info Modal - Separate Component */}
+            <BrandInfoModal
+                isOpen={isBrandInfoModalOpen}
+                onClose={() => setIsBrandInfoModalOpen(false)}
+                brandInfo={brandInfoData}
+                onApply={handleApplyBrandInfo}
+                isLoading={false}
+            />
         </div>
     )
 }

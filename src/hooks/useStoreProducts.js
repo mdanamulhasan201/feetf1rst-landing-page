@@ -15,8 +15,10 @@ export const useStoreProducts = () => {
         totalItems: 0
     })
 
-    const fetchProducts = async (page = 1, search = '') => {
-        setIsLoading(true)
+    const fetchProducts = async (page = 1, search = '', showLoading = true) => {
+        if (showLoading) {
+            setIsLoading(true)
+        }
         try {
             const itemsPerPage = 10
             const response = await getAllStoreProducts(page, itemsPerPage, search)
@@ -30,29 +32,64 @@ export const useStoreProducts = () => {
                     itemsPerPage: response.pagination?.itemsPerPage || itemsPerPage
                 }))
             } else {
-                toast.error(response.message || 'Fehler beim Laden der Produkte')
+                if (showLoading) {
+                    toast.error(response.message || 'Fehler beim Laden der Produkte')
+                }
             }
         } catch (error) {
             console.error('Error fetching products:', error)
-            toast.error(error.message || 'Fehler beim Laden der Produkte')
+            if (showLoading) {
+                toast.error(error.message || 'Fehler beim Laden der Produkte')
+            }
         } finally {
-            setIsLoading(false)
+            if (showLoading) {
+                setIsLoading(false)
+            }
         }
     }
 
     // Fetch products when debounced search term changes
     useEffect(() => {
-        fetchProducts(1, debouncedSearchTerm)
+        fetchProducts(1, debouncedSearchTerm, true)
     }, [debouncedSearchTerm])
 
     const handlePageChange = (newPage) => {
         if (newPage >= 1 && newPage <= pagination.totalPages) {
-            fetchProducts(newPage, debouncedSearchTerm)
+            fetchProducts(newPage, debouncedSearchTerm, true)
         }
     }
 
     const refreshProducts = () => {
-        fetchProducts(pagination.currentPage, debouncedSearchTerm)
+        fetchProducts(pagination.currentPage, debouncedSearchTerm, true)
+    }
+
+    // Add product optimistically to table immediately, then refresh in background
+    const addProductOptimistically = (newProduct) => {
+        if (!newProduct) return
+        
+        // Add product to the beginning of the list (most recent first)
+        setProducts(prevProducts => {
+            // Check if product already exists to avoid duplicates
+            const exists = prevProducts.some(p => p.id === newProduct.id)
+            if (exists) {
+                return prevProducts
+            }
+            // Add new product at the beginning
+            return [newProduct, ...prevProducts]
+        })
+        
+        // Update pagination if on first page
+        if (pagination.currentPage === 1) {
+            setPagination(prev => ({
+                ...prev,
+                totalItems: prev.totalItems + 1
+            }))
+        }
+        
+        // Refresh in background after a short delay (without loading spinner)
+        setTimeout(() => {
+            fetchProducts(pagination.currentPage, debouncedSearchTerm, false)
+        }, 500)
     }
 
     const handleDelete = async (productId) => {
@@ -97,6 +134,7 @@ export const useStoreProducts = () => {
         pagination,
         handlePageChange,
         refreshProducts,
+        addProductOptimistically,
         handleDelete,
         loadProductForEdit,
     }
