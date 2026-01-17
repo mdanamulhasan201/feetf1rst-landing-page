@@ -28,7 +28,7 @@ const nextConfig = {
 
       {
         protocol: 'https',
-        hostname: 'dvds-connected-decision-php.trycloudflare.com',
+        hostname: 'backend.feetf1rst.tech',
       },
       // 127.0.0.1
       {

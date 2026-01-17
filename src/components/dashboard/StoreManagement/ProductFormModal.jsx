@@ -31,6 +31,24 @@ const defaultLengths = {
     '48': '290'
 }
 
+// EU to US Size Conversion Mapping
+const euToUsSizeMap = {
+    '35': '3',
+    '36': '4',
+    '37': '5',
+    '38': '6',
+    '39': '7',
+    '40': '8',
+    '41': '9',
+    '42': '10',
+    '43': '11',
+    '44': '12',
+    '45': '13',
+    '46': '14',
+    '47': '15',
+    '48': '16'
+}
+
 const initialFormData = {
     productName: '',
     brand: '',
@@ -73,13 +91,14 @@ const getProductImageUrl = (image) => {
     return null
 }
 
-export default function ProductFormModal({ productData, onSuccess, loadProductForEdit }) {
+export default function ProductFormModal({ onSuccess, loadProductForEdit }) {
     const { isModalOpen, isEditMode, editingProductId, closeModal } = useStoreManagement()
     const [isLoading, setIsLoading] = useState(false)
     const [isLoadingProduct, setIsLoadingProduct] = useState(false)
     const [imagePreview, setImagePreview] = useState(null)
     const [imageFile, setImageFile] = useState(null)
     const [formData, setFormData] = useState(initialFormData)
+    const [sizeFormat, setSizeFormat] = useState('EU') // 'EU' or 'US'
 
     // Load product data when editing
     useEffect(() => {
@@ -379,11 +398,57 @@ export default function ProductFormModal({ productData, onSuccess, loadProductFo
                                 </div>
                             </div>
 
-                            <SizesTable
-                                formData={formData}
-                                onSizeFieldChange={handleSizeFieldChange}
-                                disabled={isLoadingProduct}
-                            />
+                            <div className="space-y-3">
+                                <div className="flex items-center justify-between border-t pt-4">
+                                    <h3 className="text-lg font-semibold text-gray-800">Größen & Länge</h3>
+                                    <div className="flex items-center gap-3">
+                                        <span className="text-sm font-medium text-gray-700">Size Format:</span>
+                                        <div className="inline-flex items-center rounded-lg border border-gray-200 bg-gray-50 p-1 shadow-sm">
+                                            <Button
+                                                type="button"
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={() => setSizeFormat('EU')}
+                                                disabled={isLoadingProduct}
+                                                className={`relative cursor-pointer min-w-[60px] px-4 py-1.5 text-sm font-medium transition-all duration-200 ${
+                                                    sizeFormat === 'EU'
+                                                        ? 'bg-white text-gray-900 shadow-sm hover:bg-white hover:text-gray-900'
+                                                        : 'text-gray-600 hover:text-gray-900 hover:bg-transparent '
+                                                }`}
+                                            >
+                                                EU
+                                                {sizeFormat === 'EU' && (
+                                                    <span className="absolute inset-x-0 -bottom-0.5 h-0.5 bg-green-600 rounded-full" />
+                                                )}
+                                            </Button>
+                                            <Button
+                                                type="button"
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={() => setSizeFormat('US')}
+                                                disabled={isLoadingProduct}
+                                                className={`relative cursor-pointer min-w-[60px] px-4 py-1.5 text-sm font-medium transition-all duration-200 ${
+                                                    sizeFormat === 'US'
+                                                        ? 'bg-white  text-gray-900 shadow-sm hover:bg-white hover:text-gray-900'
+                                                        : 'text-gray-600 hover:text-gray-900 hover:bg-transparent'
+                                                }`}
+                                            >
+                                                US
+                                                {sizeFormat === 'US' && (
+                                                    <span className="absolute inset-x-0 -bottom-0.5 h-0.5 bg-green-600 rounded-full" />
+                                                )}
+                                            </Button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <SizesTable
+                                    formData={formData}
+                                    onSizeFieldChange={handleSizeFieldChange}
+                                    disabled={isLoadingProduct}
+                                    sizeFormat={sizeFormat}
+                                    euToUsSizeMap={euToUsSizeMap}
+                                />
+                            </div>
 
                             <div className="flex justify-end gap-3 pt-4 border-t">
                                 <Button
